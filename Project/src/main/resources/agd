@@ -1,0 +1,37 @@
+FOR REQUEST
+
+-- For guest --
+    -- Connect --
+ACTION: CONNECT
+PARAMS: {
+    USERID: -1;
+}
+
+-- For user --
+    -- Connect --
+(Same as guest)
+
+    -- Get users list --
+ACTION: GET
+CONTENT: USERS
+USER: { ... }
+
+    -- Message --
+ACTION: MESSAGE
+USER: { ... }
+SESSION: <id>
+MESSAGE: "..."
+
+    -- Start session --
+ACTION: CREATE_SESSION
+CONTENT: <userId>
+USER: { ... }
+
+-- For admin --
+    -- Connect --
+Same
+
+    -- Get session list --
+ACTION: GET
+CONTENT: SESSIONS
+USER: { ... }
