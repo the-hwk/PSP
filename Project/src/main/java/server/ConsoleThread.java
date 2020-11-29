@@ -18,8 +18,6 @@ public class ConsoleThread implements Runnable {
                     case LIST:
                         printAllCommands();
                         break;
-                    case START_SERVER:
-                        break;
                     case STOP_SERVER:
                         UPDServer.ServerStatus.setStopped(true);
                         work = false;

@@ -1,5 +1,6 @@
 package server;
 
+import server.handlers.UDPNotifier;
 import server.handlers.UDPServerHandler;
 
 import java.io.IOException;
@@ -12,17 +13,18 @@ import java.util.concurrent.Executors;
 public class UPDServer {
     public static void main(String[] args) throws IOException {
         if (args.length != 4) {
-            System.out.println("Wrong args! Should be <host> <port> <max_threads> <max_message_size>");
+            System.out.println("Wrong args! Should be <host> <main_port> <notifier_port> <max_threads> <max_message_size>");
             return;
         }
 
         String host = args[0];
-        int port = Integer.parseInt(args[1]);
-        int maxThreads = Integer.parseInt(args[2]);
-        int buffSize = Integer.parseInt(args[3]);
+        int mainPort = Integer.parseInt(args[1]);
+        int notifierPort = Integer.parseInt(args[2]);
+        int maxThreads = Integer.parseInt(args[3]);
+        int buffSize = Integer.parseInt(args[4]);
 
-        InetSocketAddress address = new InetSocketAddress(host, port);
-        DatagramSocket socket = new DatagramSocket(address);
+        DatagramSocket socket = new DatagramSocket(new InetSocketAddress(host, mainPort));
+        UDPNotifier.getInstance().init(new InetSocketAddress(host, notifierPort));
 
         new Thread(new ConsoleThread()).start();
 
@@ -34,7 +36,7 @@ public class UPDServer {
             DatagramPacket packet = new DatagramPacket(new byte[buffSize], buffSize);
             socket.receive(packet);
             System.out.println("New client: " + packet.getAddress());
-            executor.execute(new UDPServerHandler(packet));
+            executor.execute(new UDPServerHandler(socket, packet));
         }
 
         if (!socket.isClosed()) {

@@ -1,22 +1,11 @@
 package db.repository;
 
-import db.connection.ConnectionPool;
-
-import java.lang.reflect.Type;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 
 class MySqlRepository<T> implements Repository<T> {
     @Override
     public int create(T bean) {
-        try {
-            Connection connection = ConnectionPool.getInstance().getConnection();
-            CallableStatement cs = connection.prepareCall("CALL create");
-        } catch (SQLException e) {
-            // TODO:
-        }
+        return 0;
     }
 
     @Override

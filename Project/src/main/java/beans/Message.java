@@ -20,4 +20,20 @@ public class Message {
         this.from = from;
         this.to = to;
     }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public User getFrom() {
+        return from;
+    }
+
+    public Room getTo() {
+        return to;
+    }
 }

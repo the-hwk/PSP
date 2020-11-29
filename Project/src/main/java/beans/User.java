@@ -1,6 +1,6 @@
 package beans;
 
-public class User implements Param {
+public class User {
     private final int id;
     private final String email;
     private final String nickname;

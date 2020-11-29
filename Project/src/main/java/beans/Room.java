@@ -12,4 +12,16 @@ public class Room {
         this.name = name;
         this.users = users;
     }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public List<User> getUsers() {
+        return users;
+    }
 }
