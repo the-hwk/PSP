@@ -2,8 +2,8 @@ package server.handlers;
 
 import org.apache.log4j.Logger;
 import server.GsonContainer;
-import server.Status;
-import server.UDPMessage;
+import server.enums.Status;
+import server.models.UDPMessage;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

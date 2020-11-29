@@ -1,4 +1,8 @@
-package server;
+package server.models;
+
+import server.GsonContainer;
+import server.enums.Action;
+import server.enums.Status;
 
 import java.util.HashMap;
 import java.util.Map;

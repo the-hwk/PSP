@@ -1,5 +1,7 @@
 package server;
 
+import server.enums.Command;
+
 import java.util.Scanner;
 
 public class ConsoleThread implements Runnable {

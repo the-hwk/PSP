@@ -3,9 +3,9 @@ package server.handlers;
 import beans.Message;
 import beans.Room;
 import beans.User;
-import server.Action;
-import server.Status;
-import server.UDPMessage;
+import server.enums.Action;
+import server.enums.Status;
+import server.models.UDPMessage;
 
 import java.io.IOException;
 import java.net.*;

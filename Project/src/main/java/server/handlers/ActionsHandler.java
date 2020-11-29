@@ -4,8 +4,8 @@ import beans.Message;
 import beans.Password;
 import beans.Room;
 import beans.User;
-import server.Status;
-import server.UDPMessage;
+import server.enums.Status;
+import server.models.UDPMessage;
 
 import java.net.SocketAddress;
 
