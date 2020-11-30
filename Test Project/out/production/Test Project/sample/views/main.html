@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        let currentRoomId = -1;
+        let userId;
+
+        function addRoom(room, message) {
+            let container = document.createElement("div");
+            container.classList.add("room");
+            container.id = room.id;
+
+            let name = document.createElement("span");
+            name.innerText = room.name;
+
+            let infoContainer = document.createElement("div");
+
+            let from = document.createElement("span");
+            if (message) {
+                from.innerText = message.from + ":";
+            }
+
+            let value = document.createElement("span");
+            if (message) {
+                value.innerText = message.value;
+            }
+
+            let date = document.createElement("span");
+            if (message) {
+                date.innerText = message.date;
+            }
+
+            infoContainer.append(from, value, date);
+
+            container.append(name, infoContainer);
+
+            document.querySelector("#rooms-container").appendChild(container);
+
+            let clicked = () => {
+                if (currentRoomId !== -1) {
+                    document.querySelector(`#${currentRoomId}`).classList.remove("clicked-room");
+                }
+
+                if (container.classList.contains("notified-room")) {
+                    container.classList.remove("notified-room");
+                }
+
+                currentRoomId = container.id;
+                container.classList.add("clicked-room");
+
+                renderMessages(JSON.parse(app.getMessages(currentRoomId)));
+            };
+
+            container.onclick = function () {
+                clicked();
+            }
+        }
+
+        function addMessage(message) {
+            let container = document.createElement("div");
+            container.classList.add("message");
+
+            let infoContainer = document.createElement("div");
+
+            let from = document.createElement("span");
+            if (message.from.id === userId) {
+                from.innerText = "Вы";
+            } else {
+                from.innerText = message.from;
+            }
+
+            let date = document.createElement("span");
+            date.innerText = message.date;
+
+            let value = document.createElement("span");
+            value.innerText = message.value;
+
+            infoContainer.append(from, date);
+
+            container.append(infoContainer, value);
+
+            document.querySelector("#messages-container").appendChild(container);
+        }
+
+        function renderRooms(rooms) {
+            document.querySelector("#rooms-container").innerHTML = "";
+
+            for (let i = 0; i < rooms.length; i++) {
+                addRoom(rooms[i], null);
+            }
+        }
+
+        function renderMessages(messages) {
+            document.querySelector("#messages-container").innerHTML = "";
+
+            for (let i = 0; i < messages.length; i++) {
+                addMessage(messages[i]);
+            }
+        }
+
+        function notifyRoom(room) {
+            document.querySelector(`#${room.id}`).classList.add("notified-room");
+        }
+
+        function notifyMessage(message) {
+            let room = document.querySelector(`#${message.to.id}`);
+
+            room.lastElementChild.children[0].innerText = `${message.from}:`;
+            room.lastElementChild.children[1].innerText = `${message.value}:`;
+            room.lastElementChild.children[2].innerText = `${message.date}:`;
+
+            if (room.id === currentRoomId) {
+                addMessage(message);
+            } else {
+                room.classList.add("notified-room");
+            }
+        }
+
+        function setUser(user) {
+            user = JSON.parse(user);
+            userId = user.id;
+        }
+
+        function getRoomList() {
+            renderRooms(JSON.parse(app.getRooms()));
+        }
+
+        window.onload = function () {
+            document.querySelector("#btn-send-message").onclick = function () {
+                let value = document.querySelector("#message-value").value;
+
+                // TODO: Java and draw Message
+            };
+
+            getRoomList();
+        };
+    </script>
+</head>
+<body>
+<div id="wrapper">
+    <div id="rooms-block">
+        <button id="btn-open-add-room-form">
+            <span>Добавить чат</span>
+        </button>
+        <div id="rooms-container">
+            <div id="0" class="room">
+                <span>Название комнаты</span>
+                <div>
+                    <span>От кого:</span>
+                    <span>Последнее сообщение</span>
+                    <span>Время</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="messages-block">
+        <div id="messages-container">
+            <div class="message">
+                <div>
+                    <span>Пользователь</span>
+                    <span>Время</span>
+                </div>
+                <span>Текст сообщения</span>
+            </div>
+        </div>
+        <div id="message-form">
+            <input id="message-value" type="text">
+            <button id="btn-send-message">
+                <span>Отправить</span>
+            </button>
+        </div>
+    </div>
+</div>
+</body>
+<style>
+    :root {
+        --dark-bg: #343637;
+        --light-bg: #494c4f;
+        --dark-text: #858585;
+        --text: #c5c6c7;
+        --light-color: #32c262;
+        --dark-color: #2f894d;
+        --time: #ffffff;
+        --alert: #bdc232;
+        --error: #c23232;
+    }
+
+    ::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    /* Handle */
+    ::-webkit-scrollbar-thumb {
+        background: var(--dark-color);
+    }
+
+    /* Handle on hover */
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--light-color);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        font: 16px "Century Gothic";
+    }
+
+    *::selection {
+        color: var(--text);
+        background-color: var(--dark-color);
+    }
+
+    body {
+        background: var(--dark-bg);
+        overflow-y: hidden;
+    }
+
+    #wrapper {
+        display: flex;
+        flex-direction: row;
+        height: 100vh;
+    }
+
+    #rooms-block {
+        flex: 1 0 0;
+        border: 1px solid var(--light-bg);
+        display: flex;
+        flex-direction: column;
+    }
+
+    #messages-block {
+        flex: 2 0 0;
+        border: 1px solid var(--light-bg);
+        display: flex;
+        flex-direction: column;
+    }
+
+    #btn-open-add-room-form {
+        background-color: var(--light-bg);
+    }
+
+    #btn-open-add-room-form:hover {
+        background-color: var(--dark-color);
+    }
+
+    #btn-open-add-room-form:active {
+        background-color: var(--light-color);
+    }
+
+    #rooms-container {
+        display: flex;
+        flex-direction: column;
+        margin-top: 10px;
+        overflow-y: auto;
+    }
+
+    .room {
+        flex: 1 0 0;
+        border-left: 5px solid var(--light-bg);
+        padding: 5px;
+        cursor: pointer;
+        margin-top: 15px;
+        transition-property: background-color, border-left-color;
+        transition-duration: 0.5s;
+    }
+
+    .room>span:first-child {
+        color: var(--light-color);
+        font-size: 18px;
+        margin-left: 30px;
+        font-weight: bold;
+    }
+
+    .room>div {
+        margin: 5px 5px 0 5px;
+        display: flex;
+    }
+
+    .room>div>span:nth-child(1) {
+        color: var(--text);
+    }
+
+    .room>div>span:nth-child(2) {
+        color: var(--dark-text);
+        margin-left: 5px;
+    }
+
+    .room>div>span:nth-child(3) {
+        color: var(--dark-color);
+        margin-left: auto;
+    }
+
+    .room:hover {
+        background-color: var(--light-bg);
+    }
+
+    .clicked-room {
+        border-left: 5px solid var(--light-color);
+        background-color: var(--light-bg);
+    }
+
+    .notified-room {
+        border-left: 5px solid yellow;
+    }
+
+    #messages-container {
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        margin: 10px 15px 10px 15px;
+    }
+
+    .message {
+        transition-property: background-color;
+        transition-duration: 0.5s;
+        padding: 5px;
+        cursor: pointer;
+    }
+
+    .message:hover {
+        background-color: var(--light-bg);
+    }
+
+    .message>div {
+        margin-left: 15px;
+    }
+
+    .message>div>span:first-child {
+        color: var(--light-color);
+    }
+
+    .message>div>span:last-child {
+        color: var(--dark-text);
+    }
+
+    .message>span {
+        color: var(--text);
+    }
+
+    #message-form {
+        display: flex;
+        flex-direction: row;
+        padding: 15px;
+        border-top: 1px solid var(--dark-color);
+        margin-top: auto;
+    }
+
+    #message-form>input {
+        flex: 1 0 0;
+        background-color: var(--dark-bg);
+        border: 1px solid var(--light-bg);
+        outline: none;
+        transition-property: border;
+        transition-duration: 0.5s;
+        margin-right: 15px;
+        color: var(--text);
+        padding: 0 5px 0 5px;
+    }
+
+    #message-form>input:hover {
+        border: 1px solid var(--dark-color);
+    }
+
+    #message-form>input:focus {
+        border: 1px solid var(--light-color);
+    }
+
+    button {
+        background-color: var(--dark-bg);
+        border: 1px solid var(--light-bg);
+        outline: none;
+        cursor: pointer;
+        color: var(--dark-text);
+        padding: 5px 10px 5px 10px;
+        transition-property: border, background-color, color;
+        transition-duration: 0.5s;
+    }
+
+    button:hover {
+        border: 1px solid var(--dark-color);
+        background-color: var(--dark-color);
+        color: var(--text);
+    }
+
+    button:active {
+        border: 1px solid var(--light-color);
+        background-color: var(--light-color);
+        color: var(--text);
+    }
+</style>
+</html>

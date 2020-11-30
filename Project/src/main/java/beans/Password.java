@@ -2,12 +2,28 @@ package beans;
 
 public class Password {
     private final int id;
-    private final User user;
-    private final byte[] password;
+    private User user;
+    private byte[] value;
 
     public Password(int id, User user, byte[] password) {
         this.id = id;
         this.user = user;
-        this.password = password;
+        this.value = password;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public byte[] getValue() {
+        return value;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

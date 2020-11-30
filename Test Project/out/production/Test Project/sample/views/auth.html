@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <script>
+        window.onload = function () {
+            document.querySelector("#btn-auth").onclick = function () {
+                let email = document.querySelector("#input-auth-email").value;
+                let password = document.querySelector("#input-auth-password").value;
+
+                app.auth(email, password);
+            };
+
+            document.querySelector("#btn-reg").onclick = function () {
+                let email = document.querySelector("#input-reg-email").value;
+                let name = document.querySelector("#input-reg-name").value;
+                let password = document.querySelector("#input-reg-password").value;
+
+                app.register(email, name, password);
+            };
+        }
+    </script>
+</head>
+<body>
+    <div id="wrapper">
+        <div id="auth-form">
+            <div class="input-container">
+                <label for="input-auth-email">E-mail</label>
+                <input id="input-auth-email" type="email">
+            </div>
+            <div class="input-container">
+                <label for="input-auth-password">Password</label>
+                <input id="input-auth-password" type="password">
+            </div>
+            <div class="button-container">
+                <button id="btn-auth">
+                    <span>Войти</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="reg-form">
+            <div class="input-container">
+                <label for="input-reg-email">E-mail</label>
+                <input id="input-reg-email" type="email">
+            </div>
+            <div class="input-container">
+                <label for="input-reg-name">Никнейм</label>
+                <input id="input-reg-name" type="text">
+            </div>
+            <div class="input-container">
+                <label for="input-reg-password">Password</label>
+                <input id="input-reg-password" type="password">
+            </div>
+            <div class="button-container">
+                <button id="btn-reg">
+                    <span>Зарегистрироваться</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+<style>
+    :root {
+        --dark-bg: #343637;
+        --light-bg: #494c4f;
+        --dark-text: #858585;
+        --text: #c5c6c7;
+        --light-color: #32c262;
+        --dark-color: #2f894d;
+        --time: #ffffff;
+        --alert: #bdc232;
+        --error: #c23232;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        font: 16px "Century Gothic";
+    }
+
+    body {
+        background: var(--dark-bg);
+    }
+
+    #wrapper {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+
+    .input-container {
+        display: flex;
+        width: 250px;
+        flex-direction: column;
+        margin: 10px;
+    }
+
+    .input-container>label {
+        color: var(--dark-text);
+        margin-left: 10px;
+    }
+
+    input {
+        background: var(--dark-bg);
+        border: 1px solid var(--light-bg);
+        transition-property: border;
+        transition-duration: 0.5s;
+        color: var(--text);
+        padding: 5px;
+        border-radius: 5px;
+        outline: none;
+    }
+
+    input:hover {
+        border: 1px solid var(--dark-color);
+    }
+
+    input:focus {
+        border: 1px solid var(--light-color);
+    }
+
+    .button-container {
+        display: flex;
+        align-items: center;
+        margin: 10px;
+    }
+
+    .button-container>button {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    button {
+        background: var(--dark-bg);
+        border: 1px solid var(--light-bg);
+        border-radius: 5px;
+        transition-property: border, background, color;
+        transition-duration: 0.5s;
+        padding: 5px 0 5px 0;
+        color: var(--dark-text);
+        cursor: pointer;
+        outline: none;
+    }
+
+    button:hover {
+        border: 1px solid var(--dark-color);
+    }
+
+    button:active {
+        border: 1px solid var(--light-color);
+        background: var(--light-color);
+        color: var(--text);
+    }
+
+    button>span {
+        margin: 15px;
+    }
+</style>
+</html>

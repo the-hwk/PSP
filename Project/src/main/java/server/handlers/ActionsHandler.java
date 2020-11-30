@@ -4,12 +4,18 @@ import beans.Message;
 import beans.Password;
 import beans.Room;
 import beans.User;
+import db.dao.DaoFactory;
 import server.enums.Status;
 import server.models.UDPMessage;
 
 import java.net.SocketAddress;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 public class ActionsHandler {
+    private static DaoFactory daoFactory = DaoFactory.getDaoFactory(DaoFactory.Consumer.MYSQL);
+
     public static UDPMessage connectionOpen(UDPMessage request) {
         return new UDPMessage(request.getAction(), null, Status.OK);
     }
@@ -23,10 +29,36 @@ public class ActionsHandler {
         User user = (User) request.getProperties().get("user");
         Password password = (Password) request.getProperties().get("password");
 
-        // TODO: Add user and password to Db
+        UDPMessage response;
 
-        UDPMessage response = new UDPMessage(request.getAction(), Status.OK);
-        response.getProperties().put("user", user);
+        Optional<User> dbUser = daoFactory.getUserDao().selectByEmail(user.getEmail());
+        if (dbUser.isPresent()) {
+            Optional<Password> dbPassword = daoFactory.getPasswordDao().selectByUser(dbUser.get());
+            if (dbPassword.isPresent()) {
+                if (Arrays.equals(password.getValue(), dbPassword.get().getValue())) {
+                    response = new UDPMessage(request.getAction(), Status.OK);
+                    response.getProperties().put("user", dbUser.get());
+                } else {
+                    response = new UDPMessage(request.getAction(), Status.WRONG_PASSWORD);
+                }
+            } else {
+                response = new UDPMessage(request.getAction(), Status.WRONG_PASSWORD);
+            }
+        } else {
+            int id = daoFactory.getUserDao().insert(user);
+            if (id != 0) {
+                User newUser = new User(id, user);
+                password.setUser(newUser);
+                if (daoFactory.getPasswordDao().insert(password) != 0) {
+                    response = new UDPMessage(request.getAction(), Status.OK);
+                    response.getProperties().put("user", newUser);
+                } else {
+                    response = new UDPMessage(request.getAction(), Status.DB_ERROR);
+                }
+            } else {
+                response = new UDPMessage(request.getAction(), Status.USER_DUPLICATE);
+            }
+        }
 
         return response;
     }
@@ -50,10 +82,10 @@ public class ActionsHandler {
 
         User user = (User) request.getProperties().get("user");
 
-        // TODO: Get list of rooms for user
+        List<Room> rooms = daoFactory.getRoomDao().selectByUser(user);
 
         UDPMessage response = new UDPMessage(request.getAction(), Status.OK);
-        // response.getProperties().put("rooms", );
+        response.getProperties().put("rooms", rooms);
 
         return response;
     }
@@ -65,18 +97,19 @@ public class ActionsHandler {
 
         Room room = (Room) request.getProperties().get("room");
 
-        // TODO: Get list of messages for room
+        List<Message> messages = daoFactory.getMessageDao().selectByRoom(room);
 
         UDPMessage response = new UDPMessage(request.getAction(), Status.OK);
-        // response.getProperties().put("messages", );
+        response.getProperties().put("messages", messages);
 
         return response;
     }
 
     public static UDPMessage getUsers(UDPMessage request) {
-        // TODO: Get list of users
+        List<User> users = daoFactory.getUserDao().select();
 
         UDPMessage response = new UDPMessage(request.getAction(), Status.OK);
+        response.getProperties().put("users", users);
 
         return response;
     }

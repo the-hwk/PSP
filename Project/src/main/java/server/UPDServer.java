@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
 
 public class UPDServer {
     public static void main(String[] args) throws IOException {
-        if (args.length != 4) {
+        if (args.length != 5) {
             System.out.println("Wrong args! Should be <host> <main_port> <notifier_port> <max_threads> <max_message_size>");
             return;
         }

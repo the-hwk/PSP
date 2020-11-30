@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        window.onload = function () {
+            document.querySelector("#btn-connect").onclick = function () {
+                let host = document.querySelector("#host").value;
+                app.createConnection();
+            };
+        }
+    </script>
+</head>
+<body>
+    <div id="wrapper">
+        <div>
+            <div class="input-container">
+                <label for="host">
+                    <span>Введите адрес хоста</span>
+                </label>
+                <input id="host" type="text">
+            </div>
+            <button id="btn-connect">
+                <span>Соединить</span>
+            </button>
+        </div>
+    </div>
+</body>
+<style>
+    :root {
+        --dark-bg: #343637;
+        --light-bg: #494c4f;
+        --dark-text: #858585;
+        --text: #c5c6c7;
+        --light-color: #32c262;
+        --dark-color: #2f894d;
+        --time: #ffffff;
+        --alert: #bdc232;
+        --error: #c23232;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        font: 16px "Century Gothic";
+    }
+
+    *::selection {
+        color: var(--text);
+        background-color: var(--dark-color);
+    }
+
+    body {
+        background: var(--dark-bg);
+        overflow-y: hidden;
+    }
+
+    #wrapper {
+        display: flex;
+        flex-direction: row;
+        height: 100vh;
+    }
+
+    #wrapper>div {
+        display: flex;
+        flex-direction: column;
+        margin: auto;
+    }
+
+    button {
+        background-color: var(--dark-bg);
+        border: 1px solid var(--light-bg);
+        outline: none;
+        cursor: pointer;
+        color: var(--dark-text);
+        padding: 5px 10px 5px 10px;
+        transition-property: border, background-color, color;
+        transition-duration: 0.5s;
+    }
+
+    button:hover {
+        border: 1px solid var(--dark-color);
+        background-color: var(--dark-color);
+        color: var(--text);
+    }
+
+    button:active {
+        border: 1px solid var(--light-color);
+        background-color: var(--light-color);
+        color: var(--text);
+    }
+
+    .input-container {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 30px;
+    }
+
+    .input-container>label {
+        margin: 0 auto 0 auto;
+    }
+
+    .input-container>label>span {
+        color: var(--dark-text);
+    }
+
+    .input-container>input {
+        color: var(--text);
+        border: 1px solid var(--light-bg);
+        background: var(--dark-bg);
+        padding: 5px;
+        transition-property: border;
+        transition-duration: 0.5s;
+    }
+
+    .input-container>input:hover {
+        border: 1px solid var(--dark-color);
+    }
+
+    .input-container>input:focus {
+        border: 1px solid var(--light-color);
+        outline: none;
+    }
+</style>
+</html>
