@@ -1,7 +1,12 @@
 package server.handlers;
 
+import beans.User;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.apache.log4j.Logger;
 import server.GsonContainer;
+import server.enums.Action;
 import server.enums.Status;
 import server.models.UDPMessage;
 
@@ -21,6 +26,10 @@ public class UDPServerHandler implements Runnable {
 
     @Override
     public void run() {
+        JsonObject obj = JsonParser.parseString(new String(packet.getData()).trim()).getAsJsonObject();
+        obj.get("fsdfsddf").getAsJsonObject();
+
+
         UDPMessage request = GsonContainer.getGson().fromJson(new String(packet.getData()).trim(), UDPMessage.class);
         UDPMessage response;
 

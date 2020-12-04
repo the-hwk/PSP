@@ -17,7 +17,7 @@ public class Controller {
 
     public void createConnection(String host) {
         if (Connection.createConnection(host)) {
-            engine.load(this.getClass().getResource("views/auth.html").toExternalForm());
+            // engine.load(this.getClass().getResource("views/auth.html").toExternalForm());
         } else {
             // TODO: JS Error
         }
@@ -36,7 +36,7 @@ public class Controller {
         if (response.getStatus().equals(Status.OK)) {
             Data.setUser((User) response.getProperties().get("user"));
             windowObject.call("setUser", GsonContainer.getGson().toJson(user));
-            engine.load(this.getClass().getResource("views/main.html").toExternalForm());
+            // engine.load(this.getClass().getResource("views/main.html").toExternalForm());
         } else {
             // TODO: JS Error
         }

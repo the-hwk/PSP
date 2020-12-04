@@ -133,11 +133,81 @@
                 // TODO: Java and draw Message
             };
 
-            getRoomList();
+            document.querySelector("#btn-connect").onclick = function () {
+                let host = document.querySelector("#host").value;
+                app.createConnection(host);
+            };
+
+            document.querySelector("#btn-auth").onclick = function () {
+                let email = document.querySelector("#input-auth-email").value;
+                let password = document.querySelector("#input-auth-password").value;
+
+                app.auth(email, password);
+            };
+
+            document.querySelector("#btn-reg").onclick = function () {
+                let email = document.querySelector("#input-reg-email").value;
+                let name = document.querySelector("#input-reg-name").value;
+                let password = document.querySelector("#input-reg-password").value;
+
+                app.register(email, name, password);
+            };
+
+            // getRoomList();
         };
     </script>
 </head>
 <body>
+
+<div>
+    <div class="input-container">
+        <label for="host">
+            <span>Введите адрес хоста</span>
+        </label>
+        <input id="host" type="text">
+    </div>
+    <button id="btn-connect">
+        <span>Соединить</span>
+    </button>
+</div>
+
+<div id="auth-form">
+    <div class="input-container">
+        <label for="input-auth-email">E-mail</label>
+        <input id="input-auth-email" type="email">
+    </div>
+    <div class="input-container">
+        <label for="input-auth-password">Password</label>
+        <input id="input-auth-password" type="password">
+    </div>
+    <div class="button-container">
+        <button id="btn-auth">
+            <span>Войти</span>
+        </button>
+    </div>
+</div>
+
+<div id="reg-form">
+    <div class="input-container">
+        <label for="input-reg-email">E-mail</label>
+        <input id="input-reg-email" type="email">
+    </div>
+    <div class="input-container">
+        <label for="input-reg-name">Никнейм</label>
+        <input id="input-reg-name" type="text">
+    </div>
+    <div class="input-container">
+        <label for="input-reg-password">Password</label>
+        <input id="input-reg-password" type="password">
+    </div>
+    <div class="button-container">
+        <button id="btn-reg">
+            <span>Зарегистрироваться</span>
+        </button>
+    </div>
+</div>
+
+
 <div id="wrapper">
     <div id="rooms-block">
         <button id="btn-open-add-room-form">

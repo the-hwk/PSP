@@ -16,7 +16,7 @@ public class Main extends Application {
         WebView webView = new WebView();
 
         WebEngine engine = webView.getEngine();
-        engine.load(this.getClass().getResource("views/startup.html").toExternalForm());
+        engine.load(this.getClass().getResource("views/main.html").toExternalForm());
 
         engine.setJavaScriptEnabled(true);
 

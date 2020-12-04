@@ -1,5 +1,7 @@
 package server.models;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import server.GsonContainer;
 import server.enums.Action;
 import server.enums.Status;
@@ -20,6 +22,19 @@ public class UDPMessage {
         this.action = action;
         this.properties = properties;
         this.status = status;
+    }
+
+    public static UDPMessage parse(String str) {
+        JsonObject request = JsonParser.parseString(str).getAsJsonObject();
+
+        Action action = GsonContainer.getGson().fromJson(request.get("action").getAsString(), Action.class);
+        JsonObject propertiesObj = request.get("properties").getAsJsonObject();
+
+        if (propertiesObj == null) {
+            return new UDPMessage(action, Status.OK);
+        }
+
+        return null;
     }
 
     public Action getAction() {
