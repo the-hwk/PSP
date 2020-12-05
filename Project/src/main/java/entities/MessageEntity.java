@@ -6,12 +6,12 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "messages", schema = "multichat")
-public class MessagesEntity {
+public class MessageEntity {
     private int id;
     private String value;
     private Timestamp dateVal;
-    private UsersEntity fromUser;
-    private RoomsEntity toRoom;
+    private UserEntity fromUser;
+    private RoomEntity toRoom;
 
     @Id
     @Column(name = "id", nullable = false)
@@ -49,7 +49,7 @@ public class MessagesEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        MessagesEntity that = (MessagesEntity) o;
+        MessageEntity that = (MessageEntity) o;
 
         if (id != that.id) return false;
         if (!Objects.equals(value, that.value)) return false;
@@ -63,21 +63,21 @@ public class MessagesEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
-    public UsersEntity getFromUser() {
+    public UserEntity getFromUser() {
         return fromUser;
     }
 
-    public void setFromUser(UsersEntity usersByUserId) {
+    public void setFromUser(UserEntity usersByUserId) {
         this.fromUser = usersByUserId;
     }
 
     @ManyToOne
     @JoinColumn(name = "room_id", referencedColumnName = "id", nullable = false)
-    public RoomsEntity getToRoom() {
+    public RoomEntity getToRoom() {
         return toRoom;
     }
 
-    public void setToRoom(RoomsEntity roomsByRoomId) {
+    public void setToRoom(RoomEntity roomsByRoomId) {
         this.toRoom = roomsByRoomId;
     }
 }

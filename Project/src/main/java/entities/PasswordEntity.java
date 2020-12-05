@@ -5,10 +5,10 @@ import java.util.Arrays;
 
 @Entity
 @Table(name = "passwords", schema = "multichat")
-public class PasswordsEntity {
+public class PasswordEntity {
     private int id;
     private byte[] value;
-    private UsersEntity user;
+    private UserEntity user;
 
     @Id
     @Column(name = "id", nullable = false)
@@ -36,7 +36,7 @@ public class PasswordsEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        PasswordsEntity that = (PasswordsEntity) o;
+        PasswordEntity that = (PasswordEntity) o;
 
         if (id != that.id) return false;
         return Arrays.equals(value, that.value);
@@ -49,11 +49,11 @@ public class PasswordsEntity {
 
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
-    public UsersEntity getUser() {
+    public UserEntity getUser() {
         return user;
     }
 
-    public void setUser(UsersEntity usersByUserId) {
+    public void setUser(UserEntity usersByUserId) {
         this.user = usersByUserId;
     }
 }

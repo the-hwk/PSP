@@ -1,17 +1,16 @@
 package entities;
 
 import javax.persistence.*;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "rooms", schema = "multichat")
-public class RoomsEntity {
+public class RoomEntity {
     private int id;
     private String name;
-    Set<UsersEntity> users = new HashSet<>();
+    Set<UserEntity> users = new HashSet<>();
 
     @Id
     @Column(name = "id", nullable = false)
@@ -40,19 +39,19 @@ public class RoomsEntity {
             joinColumns = { @JoinColumn(name = "room_id") },
             inverseJoinColumns = { @JoinColumn(name = "user_id") }
     )
-    public Set<UsersEntity> getUsers() {
+    public Set<UserEntity> getUsers() {
         return users;
     }
 
-    public void setUsers(Set<UsersEntity> details) {
+    public void setUsers(Set<UserEntity> details) {
         this.users = details;
     }
 
-    public void addDetail(UsersEntity detail) {
+    public void addDetail(UserEntity detail) {
         users.add(detail);
     }
 
-    public void removeDetail(UsersEntity detail) {
+    public void removeDetail(UserEntity detail) {
         users.remove(detail);
     }
 
@@ -61,7 +60,7 @@ public class RoomsEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        RoomsEntity that = (RoomsEntity) o;
+        RoomEntity that = (RoomEntity) o;
 
         if (id != that.id) return false;
         return Objects.equals(name, that.name);

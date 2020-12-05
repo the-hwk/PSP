@@ -1,19 +1,18 @@
 package entities;
 
 import javax.persistence.*;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "users", schema = "multichat")
-public class UsersEntity {
+public class UserEntity {
     private int id;
     private String email;
     private String nickname;
     private int roleId;
-    private Set<RoomsEntity> rooms = new HashSet<>();
+    private Set<RoomEntity> rooms = new HashSet<>();
 
     @Id
     @Column(name = "id", nullable = false)
@@ -60,11 +59,11 @@ public class UsersEntity {
     @JoinTable(name = "rooms_data",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "room_id"))
-    public Set<RoomsEntity> getRooms() {
+    public Set<RoomEntity> getRooms() {
         return rooms;
     }
 
-    public void setRooms(Set<RoomsEntity> cars) {
+    public void setRooms(Set<RoomEntity> cars) {
         this.rooms = cars;
     }
 
@@ -73,7 +72,7 @@ public class UsersEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        UsersEntity that = (UsersEntity) o;
+        UserEntity that = (UserEntity) o;
 
         if (id != that.id) return false;
         if (roleId != that.roleId) return false;
