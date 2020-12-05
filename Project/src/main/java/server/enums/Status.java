@@ -6,5 +6,6 @@ public enum Status {
     WRONG_PASSWORD,
     USER_DUPLICATE,
     DB_ERROR,
-    MISSING_PROPERTY
+    MISSING_PROPERTY,
+    ERROR
 }

@@ -1,8 +1,9 @@
 package server.handlers;
 
-import beans.Message;
-import beans.Room;
-import beans.User;
+import entities.MessageEntity;
+import entities.RoomEntity;
+import entities.UserEntity;
+import server.GsonContainer;
 import server.enums.Action;
 import server.enums.Status;
 import server.models.UDPMessage;
@@ -13,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class UDPNotifier {
-    private Map<User, SocketAddress> clients = new HashMap<>();
+    private Map<UserEntity, SocketAddress> clients = new HashMap<>();
     private DatagramSocket socket;
 
     public static class SingletonHolder {
@@ -28,44 +29,36 @@ public class UDPNotifier {
         socket = new DatagramSocket(address);
     }
 
-    public synchronized void add(User user, SocketAddress address) {
+    public synchronized void add(UserEntity user, SocketAddress address) {
         clients.put(user, address);
     }
 
-    public synchronized void remove(User user) {
+    public synchronized void remove(UserEntity user) {
         clients.remove(user);
     }
 
-    public void notify(Room room) {
-        for (User user : room.getUsers()) {
-            if (clients.containsKey(user)) {
-                UDPMessage message = new UDPMessage(Action.NOTIFY, Status.OK);
-                message.getProperties().put("room", room);
-
-                byte[] buffer = message.toString().getBytes();
-
-                try {
-                    socket.send(new DatagramPacket(buffer, buffer.length, clients.get(user)));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+    public void notify(RoomEntity room) {
+        for (UserEntity user : room.getUsers()) {
+            sendData(user, GsonContainer.getGson().toJson(room));
         }
     }
 
-    public void notify(Message message) {
-        for (User user : message.getTo().getUsers()) {
-            if (clients.containsKey(user)) {
-                UDPMessage response = new UDPMessage(Action.NOTIFY, Status.OK);
-                response.getProperties().put("message", message);
+    public void notify(MessageEntity message) {
+        for (UserEntity user : message.getToRoom().getUsers()) {
+            sendData(user, GsonContainer.getGson().toJson(message));
+        }
+    }
 
-                byte[] buffer = message.toString().getBytes();
+    private void sendData(UserEntity user, String s) {
+        if (clients.containsKey(user)) {
+            UDPMessage message = new UDPMessage(Action.NOTIFY, s, Status.OK);
 
-                try {
-                    socket.send(new DatagramPacket(buffer, buffer.length, clients.get(user)));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            byte[] buffer = message.toString().getBytes();
+
+            try {
+                socket.send(new DatagramPacket(buffer, buffer.length, clients.get(user)));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }

@@ -1,16 +1,14 @@
 package server.handlers;
 
-import beans.User;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import annotations.Handler;
 import org.apache.log4j.Logger;
 import server.GsonContainer;
-import server.enums.Action;
 import server.enums.Status;
 import server.models.UDPMessage;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
@@ -26,40 +24,20 @@ public class UDPServerHandler implements Runnable {
 
     @Override
     public void run() {
-        JsonObject obj = JsonParser.parseString(new String(packet.getData()).trim()).getAsJsonObject();
-        obj.get("fsdfsddf").getAsJsonObject();
-
-
         UDPMessage request = GsonContainer.getGson().fromJson(new String(packet.getData()).trim(), UDPMessage.class);
-        UDPMessage response;
+        UDPMessage response = new UDPMessage(request.getAction(), null, Status.WRONG_UDP_MESSAGE);
 
-        switch (request.getAction()) {
-            case CONNECTION_OPEN:
-                response = ActionsHandler.connectionOpen(request);
-                break;
-            case AUTHENTICATION:
-                response = ActionsHandler.authentication(request);
-                break;
-            case GET_ROOMS:
-                response = ActionsHandler.getRooms(request);
-                break;
-            case GET_MESSAGES:
-                response = ActionsHandler.getMessages(request);
-                break;
-            case GET_USERS:
-                response = ActionsHandler.getUsers(request);
-                break;
-            case ADD_ROOM:
-                response = ActionsHandler.addRoom(request);
-                break;
-            case ADD_MESSAGE:
-                response = ActionsHandler.addMessage(request);
-                break;
-            case CREATE_NOTIFIER:
-                response = ActionsHandler.createNotifier(request, packet.getSocketAddress());
-                break;
-            default:
-                response = new UDPMessage(request.getAction(), Status.WRONG_UDP_MESSAGE);
+        for (Method method : ActionsHandler.class.getMethods()) {
+            if (method.isAnnotationPresent(Handler.class)) {
+                Handler handler = method.getAnnotation(Handler.class);
+                if (handler.value().equals(request.getAction())) {
+                    try {
+                        response = (UDPMessage) method.invoke(request);
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
 
         byte[] buffer = response.toString().getBytes();
