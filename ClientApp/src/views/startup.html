@@ -5,7 +5,8 @@
     <script>
         window.onload = function () {
             document.querySelector("#btn-connect").onclick = function () {
-                let host = document.querySelector("#host").value;
+                document.querySelector("#host").value = "fsdf";
+                app.check();
                 app.createConnection();
             };
         }
