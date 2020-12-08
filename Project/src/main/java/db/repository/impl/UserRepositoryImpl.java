@@ -1,6 +1,7 @@
 package db.repository.impl;
 
 import db.repository.UserRepository;
+import entities.RoomEntity;
 import entities.UserEntity;
 import org.hibernate.Session;
 import utils.HibernateSessionFactoryUtil;
@@ -9,6 +10,8 @@ import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import java.util.HashSet;
+import java.util.Set;
 
 class UserRepositoryImpl extends RepositoryImpl<UserEntity> implements UserRepository {
     public static class SingletonHolder {
@@ -35,6 +38,14 @@ class UserRepositoryImpl extends RepositoryImpl<UserEntity> implements UserRepos
 
             TypedQuery<UserEntity> allQuery = session.createQuery(all);
             return allQuery.getSingleResult();
+        }
+    }
+
+    @Override
+    public void save(Session session, RoomEntity room) {
+        for (UserEntity user : room.getUsers()) {
+            UserEntity dbUser = session.get(UserEntity.class, user.getId());
+            dbUser.getRooms().add(room);
         }
     }
 }

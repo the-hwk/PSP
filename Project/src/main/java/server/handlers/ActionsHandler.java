@@ -115,13 +115,14 @@ public class ActionsHandler {
     public static UDPMessage addRoom(UDPMessage request) {
         RoomEntity room = GsonContainer.getGson().fromJson(request.getBody(), RoomEntity.class);
 
+        /*
         Set<UserEntity> users = new HashSet<>();
 
         for (UserEntity user : room.getUsers()) {
             users.add(RepositoryFactory.getUserRepository().findById(user.getId()));
         }
 
-        room.setUsers(users);
+        room.setUsers(users);*/
 
         RepositoryFactory.getRoomRepository().save(room);
 

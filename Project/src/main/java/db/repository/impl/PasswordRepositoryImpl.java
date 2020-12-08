@@ -24,7 +24,7 @@ class PasswordRepositoryImpl extends RepositoryImpl<PasswordEntity> implements P
     @Override
     public PasswordEntity findByUser(UserEntity user) {
         try (Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession()) {
-            Query query = session.createQuery("from PasswordEntity where user_id = :id");
+            Query query = session.createQuery("from PasswordEntity where user.id = :id");
             query.setParameter("id", user.getId());
             return (PasswordEntity) query.getSingleResult();
         }

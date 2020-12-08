@@ -391,8 +391,11 @@
                 <input id="input-room-name" type="text">
             </div>
 
-            <div id="users-nicknames">
+            <div class="users-nicknames-container">
+                <span>Пользователи</span>
+                <div id="users-nicknames">
 
+                </div>
             </div>
 
             <div class="select-container">
@@ -711,6 +714,36 @@
 
     .input-container>input:active, .input-container>input:focus {
         border: 1px solid var(--light-color);
+    }
+
+    .select-container {
+        display: flex;
+        margin-bottom: 10px;
+        flex-direction: row;
+    }
+
+    .select-container>select {
+        background: var(--dark-bg);
+        color: var(--text);
+        border: 1px solid var(--light-bg);
+        outline: none;
+    }
+
+    .select-container>button {
+        margin-left: 10px;
+    }
+
+    .users-nicknames-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .users-nicknames-container>span:first-child {
+        color: var(--dark-color);
+        font-weight: bold;
+        font-size: 20px;
+        margin-bottom: 10px;
     }
 
     .link-container {

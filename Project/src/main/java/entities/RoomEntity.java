@@ -10,7 +10,7 @@ import java.util.Set;
 public class RoomEntity {
     private int id;
     private String name;
-    Set<UserEntity> users = new HashSet<>();
+    private Set<UserEntity> users = new HashSet<>();
 
     @Id
     @Column(name = "id", nullable = false)
@@ -33,12 +33,7 @@ public class RoomEntity {
         this.name = name;
     }
 
-    @ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "rooms_data",
-            joinColumns = { @JoinColumn(name = "room_id") },
-            inverseJoinColumns = { @JoinColumn(name = "user_id") }
-    )
+    @ManyToMany(mappedBy = "rooms", cascade = { CascadeType.PERSIST }, fetch = FetchType.LAZY)
     public Set<UserEntity> getUsers() {
         return users;
     }
