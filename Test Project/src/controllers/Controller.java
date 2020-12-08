@@ -1,7 +1,6 @@
 package controllers;
 
 import beans.*;
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import info.Connection;
 import info.Data;
