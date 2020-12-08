@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <script>
         let currentRoomId = -1;
-        let userId;
+        let notVisibleClass = "not-visible";
+        let USER;
+        let usersToAddRoom;
 
         function addRoom(room, message) {
             let container = document.createElement("div");
             container.classList.add("room");
-            container.id = room.id;
+            container.id = `room-${room.id}`;
 
             let name = document.createElement("span");
             name.innerText = room.name;
@@ -18,7 +20,7 @@
 
             let from = document.createElement("span");
             if (message) {
-                from.innerText = message.from + ":";
+                from.innerText = message.fromUser.nickname + ":";
             }
 
             let value = document.createElement("span");
@@ -28,7 +30,7 @@
 
             let date = document.createElement("span");
             if (message) {
-                date.innerText = message.date;
+                date.innerText = message.dateVal;
             }
 
             infoContainer.append(from, value, date);
@@ -39,17 +41,17 @@
 
             let clicked = () => {
                 if (currentRoomId !== -1) {
-                    document.querySelector(`#${currentRoomId}`).classList.remove("clicked-room");
+                    document.querySelector(`#room-${currentRoomId}`).classList.remove("clicked-room");
                 }
 
                 if (container.classList.contains("notified-room")) {
                     container.classList.remove("notified-room");
                 }
 
-                currentRoomId = container.id;
+                currentRoomId = container.id.replace("room-", "");
                 container.classList.add("clicked-room");
 
-                renderMessages(JSON.parse(app.getMessages(currentRoomId)));
+                getMessages();
             };
 
             container.onclick = function () {
@@ -64,14 +66,14 @@
             let infoContainer = document.createElement("div");
 
             let from = document.createElement("span");
-            if (message.from.id === userId) {
+            if (message.fromUser.id === USER.id) {
                 from.innerText = "Вы";
             } else {
-                from.innerText = message.from;
+                from.innerText = message.fromUser.nickname;
             }
 
             let date = document.createElement("span");
-            date.innerText = message.date;
+            date.innerText = message.dateVal;
 
             let value = document.createElement("span");
             value.innerText = message.value;
@@ -83,11 +85,47 @@
             document.querySelector("#messages-container").appendChild(container);
         }
 
-        function renderRooms(rooms) {
+        function fillUsersSelect(usersJson) {
+            let users = JSON.parse(usersJson);
+            let select = document.querySelector("#select-users");
+            select.innerHTML = "";
+
+            for (let i = 0; i < users.length; i++) {
+                let option = document.createElement("option");
+                if (users[i].id !== USER.id) {
+                    option.id = `user-${users[i].id}`;
+                    option.innerText = users[i].nickname;
+                    select.appendChild(option);
+                }
+            }
+        }
+
+        function addUserToRoom() {
+            let select = document.querySelector("#select-users");
+            let container = document.querySelector("#users-nicknames");
+
+            let inputContainer = document.createElement("div");
+            inputContainer.classList.add("input-container");
+
+            let input = document.createElement("input");
+            input.value = select[select.selectedIndex].value;
+            input.setAttribute("readonly", "readonly");
+
+            inputContainer.appendChild(input);
+
+            container.appendChild(inputContainer);
+
+            let id = parseInt(select[select.selectedIndex].id.replace("user-", ""));
+
+            usersToAddRoom.push(id);
+            select.removeChild(document.getElementById(`${select[select.selectedIndex].id}`));
+        }
+
+        function renderRooms() {
             document.querySelector("#rooms-container").innerHTML = "";
 
-            for (let i = 0; i < rooms.length; i++) {
-                addRoom(rooms[i], null);
+            for (let i = 0; i < USER.rooms.length; i++) {
+                addRoom(USER.rooms[i], null);
             }
         }
 
@@ -99,16 +137,25 @@
             }
         }
 
-        function notifyRoom(room) {
-            document.querySelector(`#${room.id}`).classList.add("notified-room");
+        function openRoomForm() {
+            showPage("room-adder");
+            app.getUsers();
+            usersToAddRoom = [];
+            usersToAddRoom.push(USER.id);
         }
 
-        function notifyMessage(message) {
-            let room = document.querySelector(`#${message.to.id}`);
+        function notifyRoom(roomJson) {
+            let room = JSON.parse(roomJson);
+            document.querySelector(`#room-${room.id}`).classList.add("notified-room");
+        }
+
+        function notifyMessage(messageJson) {
+            let message = JSON.parse(messageJson);
+            let room = document.querySelector(`#room-${message.toRoom.id}`);
 
             room.lastElementChild.children[0].innerText = `${message.from}:`;
             room.lastElementChild.children[1].innerText = `${message.value}:`;
-            room.lastElementChild.children[2].innerText = `${message.date}:`;
+            room.lastElementChild.children[2].innerText = `${message.dateVal}:`;
 
             if (room.id === currentRoomId) {
                 addMessage(message);
@@ -118,132 +165,248 @@
         }
 
         function setUser(user) {
-            user = JSON.parse(user);
-            userId = user.id;
+            USER = JSON.parse(user);
         }
 
         function getRoomList() {
             renderRooms(JSON.parse(app.getRooms()));
         }
 
+        function getMessages() {
+            renderMessages(JSON.parse(app.getMessages(currentRoomId)));
+        }
+
+        function showPage(page) {
+            let pages = document.querySelectorAll(".wrapper");
+
+            for (let i = 0; i < pages.length; i++) {
+                if (!pages[i].classList.contains(notVisibleClass)) {
+                    pages[i].style.opacity = "0";
+                    setTimeout(() => {
+                        pages[i].classList.add(notVisibleClass);
+                    }, 500);
+                    break;
+                }
+            }
+
+            document.querySelector(`#page-${page}`).classList.remove(notVisibleClass);
+            setTimeout(() => {
+                document.querySelector(`#page-${page}`).style.opacity = "1";
+            }, 500);
+        }
+
+        function showInfo(text) {
+            flexMessage.info(text);
+        }
+
+        function showError(text) {
+            flexMessage.error(text);
+        }
+
+        function showAlert(text) {
+            flexMessage.alert(text);
+        }
+
+        let flexMessage = {
+            info: (text) => flexMessage._show("Информация", text, "var(--text)"),
+            error: (text) => flexMessage._show("Ошибка", text, "var(--error)"),
+            alert: (text) => flexMessage._show("Предупреждение", text, "var(--alert)"),
+            _show: (title, text, color) => {
+                let messageDiv = document.querySelector("#flex_message");
+                messageDiv.firstElementChild.innerText = title;
+                messageDiv.lastElementChild.innerText = text;
+                messageDiv.style.borderColor = color;
+                messageDiv.style.left = "50px";
+                setTimeout(() => messageDiv.style.left = `-${messageDiv.offsetWidth}px`, 3000);
+            }
+        }
+
+        function connect() {
+            let host = document.querySelector("#input-host").value;
+            app.createConnection(host);
+        }
+
+        function login() {
+            let email = document.querySelector("#input-login-email").value;
+            let password = document.querySelector("#input-login-password").value;
+
+            app.login(email, password);
+        }
+
+        function registration() {
+            let email = document.querySelector("#input-reg-email").value;
+            let name = document.querySelector("#input-reg-name").value;
+            let password = document.querySelector("#input-reg-password").value;
+
+            app.registration(email, name, password);
+        }
+
+        function createRoom() {
+            let name = document.querySelector("#input-room-name").value;
+
+            let usersId = [];
+            for (let i = 0; i < usersToAddRoom.length; i++) {
+                usersId.push({
+                    "id": usersToAddRoom[i]
+                });
+            }
+
+            app.createRoom(name, JSON.stringify(usersId));
+        }
+
+        function createMessage() {
+            let value = document.querySelector("#message-value").value;
+            app.createMessage(USER.id, currentRoomId, value);
+        }
+
         window.onload = function () {
-            document.querySelector("#btn-send-message").onclick = function () {
-                let value = document.querySelector("#message-value").value;
-
-                // TODO: Java and draw Message
-            };
-
-            document.querySelector("#btn-connect").onclick = function () {
-                let host = document.querySelector("#host").value;
-                app.createConnection(host);
-            };
-
-            document.querySelector("#btn-auth").onclick = function () {
-                let email = document.querySelector("#input-auth-email").value;
-                let password = document.querySelector("#input-auth-password").value;
-
-                app.auth(email, password);
-            };
-
-            document.querySelector("#btn-reg").onclick = function () {
-                let email = document.querySelector("#input-reg-email").value;
-                let name = document.querySelector("#input-reg-name").value;
-                let password = document.querySelector("#input-reg-password").value;
-
-                app.register(email, name, password);
-            };
-
-            // getRoomList();
+            // Show startup page
+            showPage("startup");
         };
     </script>
 </head>
 <body>
+    <div id="flex_message">
+        <span></span>
+        <span></span>
+    </div>
 
-<div>
-    <div class="input-container">
-        <label for="host">
-            <span>Введите адрес хоста</span>
-        </label>
-        <input id="host" type="text">
-    </div>
-    <button id="btn-connect">
-        <span>Соединить</span>
-    </button>
-</div>
+    <!--Подключение к серверу-->
+    <div id="page-startup" class="wrapper not-visible">
+        <div class="form">
+            <span>Подключение к серверу</span>
+            <div class="input-container">
+                <label for="input-host">Адрес хоста</label>
+                <input id="input-host" type="text" value="localhost">
+            </div>
 
-<div id="auth-form">
-    <div class="input-container">
-        <label for="input-auth-email">E-mail</label>
-        <input id="input-auth-email" type="email">
-    </div>
-    <div class="input-container">
-        <label for="input-auth-password">Password</label>
-        <input id="input-auth-password" type="password">
-    </div>
-    <div class="button-container">
-        <button id="btn-auth">
-            <span>Войти</span>
-        </button>
-    </div>
-</div>
-
-<div id="reg-form">
-    <div class="input-container">
-        <label for="input-reg-email">E-mail</label>
-        <input id="input-reg-email" type="email">
-    </div>
-    <div class="input-container">
-        <label for="input-reg-name">Никнейм</label>
-        <input id="input-reg-name" type="text">
-    </div>
-    <div class="input-container">
-        <label for="input-reg-password">Password</label>
-        <input id="input-reg-password" type="password">
-    </div>
-    <div class="button-container">
-        <button id="btn-reg">
-            <span>Зарегистрироваться</span>
-        </button>
-    </div>
-</div>
-
-
-<div id="wrapper">
-    <div id="rooms-block">
-        <button id="btn-open-add-room-form">
-            <span>Добавить чат</span>
-        </button>
-        <div id="rooms-container">
-            <div id="0" class="room">
-                <span>Название комнаты</span>
-                <div>
-                    <span>От кого:</span>
-                    <span>Последнее сообщение</span>
-                    <span>Время</span>
-                </div>
+            <div class="button-container">
+                <button onclick="connect()">
+                    <span>Подключиться</span>
+                </button>
             </div>
         </div>
     </div>
 
-    <div id="messages-block">
-        <div id="messages-container">
-            <div class="message">
-                <div>
-                    <span>Пользователь</span>
-                    <span>Время</span>
-                </div>
-                <span>Текст сообщения</span>
+    <!--Вход-->
+    <div id="page-login" class="wrapper not-visible">
+        <div class="form">
+            <span>Вход в аккаунт</span>
+            <div class="input-container">
+                <label for="input-login-email">E-mail</label>
+                <input id="input-login-email" type="email">
+            </div>
+            <div class="input-container">
+                <label for="input-login-password">Пароль</label>
+                <input id="input-login-password" type="password">
+            </div>
+            <div class="link-container">
+                <span onclick="showPage('registration')">Регистрация</span>
+            </div>
+            <div class="button-container">
+                <button onclick="login()">
+                    <span>Войти</span>
+                </button>
             </div>
         </div>
-        <div id="message-form">
-            <input id="message-value" type="text">
-            <button id="btn-send-message">
-                <span>Отправить</span>
+    </div>
+
+    <!--Регистрация-->
+    <div id="page-registration" class="wrapper not-visible">
+        <div class="form">
+            <span>Регистрация</span>
+            <div class="input-container">
+                <label for="input-reg-email">E-mail</label>
+                <input id="input-reg-email" type="email">
+            </div>
+            <div class="input-container">
+                <label for="input-reg-name">Никнейм</label>
+                <input id="input-reg-name" type="text">
+            </div>
+            <div class="input-container">
+                <label for="input-reg-password">Пароль</label>
+                <input id="input-reg-password" type="password">
+            </div>
+            <div class="button-container">
+                <button onclick="registration()">
+                    <span>Зарегистрироваться</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-main" class="wrapper not-visible">
+        <div id="rooms-block">
+            <button onclick="openRoomForm()">
+                <span>Добавить чат</span>
             </button>
+            <div id="rooms-container">
+                <div id="0" class="room">
+                    <span>Название комнаты</span>
+                    <div>
+                        <span>От кого:</span>
+                        <span>Последнее сообщение</span>
+                        <span>Время</span>
+                    </div>
+                </div>
+                <div id="1" class="room">
+                    <span>Название комнаты</span>
+                    <div>
+                        <span>От кого:</span>
+                        <span>Последнее сообщение</span>
+                        <span>Время</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="messages-block">
+            <div id="messages-container">
+                <div class="message">
+                    <div>
+                        <span>Пользователь</span>
+                        <span>Время</span>
+                    </div>
+                    <span>Текст сообщения</span>
+                </div>
+            </div>
+            <div id="message-form">
+                <input id="message-value" type="text">
+                <button onclick="createMessage()">
+                    <span>Отправить</span>
+                </button>
+            </div>
         </div>
     </div>
-</div>
+
+    <div id="page-room-adder" class="wrapper not-visible">
+        <div class="form">
+            <span>Добавление чата</span>
+            <div class="input-container">
+                <label for="input-room-name">Название</label>
+                <input id="input-room-name" type="text">
+            </div>
+
+            <div id="users-nicknames">
+
+            </div>
+
+            <div class="select-container">
+                <select id="select-users">
+
+                </select>
+                <button onclick="addUserToRoom()">+</button>
+            </div>
+
+            <div class="button-container">
+                <button onclick="createRoom()">
+                    <span>Создать чат</span>
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
+
 <style>
     :root {
         --dark-bg: #343637;
@@ -275,6 +438,7 @@
         margin: 0;
         padding: 0;
         font: 16px "Century Gothic";
+        user-select: none;
     }
 
     *::selection {
@@ -282,15 +446,51 @@
         background-color: var(--dark-color);
     }
 
+    #flex_message {
+        background: var(--light-bg);
+        border-left-width: 5px;
+        border-left-style: solid;
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 100px;
+        left: -500px;
+        z-index: 1;
+        transition-property: left;
+        transition-duration: 0.75s;
+    }
+
+    #flex_message>span {
+        color: var(--text);
+        margin: 0 15px 0 15px;
+    }
+
+    #flex_message>span:first-of-type {
+        font-size: 18px;
+        margin-left: 30px;
+        margin-top: 5px;
+    }
+
+    #flex_message>span:last-of-type {
+        margin-bottom: 5px;
+    }
+
     body {
         background: var(--dark-bg);
         overflow-y: hidden;
     }
 
-    #wrapper {
+    .wrapper {
         display: flex;
         flex-direction: row;
         height: 100vh;
+        opacity: 0;
+        transition-property: opacity;
+        transition-duration: 0.5s;
+    }
+
+    .not-visible {
+        display: none;
     }
 
     #rooms-block {
@@ -403,6 +603,7 @@
 
     .message>div>span:last-child {
         color: var(--dark-text);
+        margin-left: 10px;
     }
 
     .message>span {
@@ -443,7 +644,7 @@
         outline: none;
         cursor: pointer;
         color: var(--dark-text);
-        padding: 5px 10px 5px 10px;
+        padding: 5px 15px 5px 15px;
         transition-property: border, background-color, color;
         transition-duration: 0.5s;
     }
@@ -458,6 +659,68 @@
         border: 1px solid var(--light-color);
         background-color: var(--light-color);
         color: var(--text);
+    }
+
+    .form {
+        flex: 1 0 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: auto;
+        padding: 30px;
+    }
+
+    .form>span:first-child {
+        color: var(--dark-color);
+        font-weight: bold;
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+
+    .input-container {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 10px;
+    }
+
+    .input-container>label {
+        color: var(--dark-text);
+        margin-left: 15px;
+        margin-bottom: 5px;
+        font-size: 16px;
+    }
+
+    .input-container>input {
+        outline: none;
+        background-color: var(--dark-bg);
+        border: 1px solid var(--light-bg);
+        color: var(--text);
+        padding: 5px;
+        width: 300px;
+        transition-property: border;
+        transition-duration: 0.5s;
+    }
+
+    .input-container>input:hover {
+        border: 1px solid var(--dark-color);
+    }
+
+    .input-container>input:active, .input-container>input:focus {
+        border: 1px solid var(--light-color);
+    }
+
+    .link-container {
+        margin-bottom: 10px;
+    }
+
+    .link-container>span {
+        color: var(--dark-color);
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    .link-container>span:hover {
+        color: var(--light-color);
     }
 </style>
 </html>

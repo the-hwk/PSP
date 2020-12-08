@@ -21,11 +21,9 @@ public class Connection {
             socket = new DatagramSocket();
             address = new InetSocketAddress(host, PORT);
 
-            UDPMessage request = new UDPMessage(Action.CONNECTION_OPEN);
+            UDPMessage request = new UDPMessage(Action.CONNECTION_OPEN, null);
 
             UDPMessage response = createRequest(request);
-
-            System.out.println(response.toString());
 
             if (response.getStatus().equals(Status.OK)) {
                 return true;
@@ -55,8 +53,14 @@ public class Connection {
             socket.receive(packet);
         } catch (IOException e) {
             System.out.println(e.getMessage());
+        } finally {
+            socket.close();
         }
 
         return GsonContainer.getGson().fromJson(new String(packet.getData()).trim(), UDPMessage.class);
+    }
+
+    public static InetSocketAddress getAddress() {
+        return address;
     }
 }

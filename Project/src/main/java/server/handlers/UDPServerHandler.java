@@ -32,10 +32,11 @@ public class UDPServerHandler implements Runnable {
                 Handler handler = method.getAnnotation(Handler.class);
                 if (handler.value().equals(request.getAction())) {
                     try {
-                        response = (UDPMessage) method.invoke(request);
+                        response = (UDPMessage) method.invoke(ActionsHandler.class, request);
                     } catch (IllegalAccessException | InvocationTargetException e) {
                         e.printStackTrace();
                     }
+                    break;
                 }
             }
         }

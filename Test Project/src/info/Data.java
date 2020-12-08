@@ -1,15 +1,15 @@
 package info;
 
-import beans.User;
+import beans.UserEntity;
 
 public class Data {
-    private static User user;
+    private static UserEntity userEntity;
 
-    public static User getUser() {
-        return user;
+    public static UserEntity getUser() {
+        return userEntity;
     }
 
-    public static void setUser(User user) {
-        Data.user = user;
+    public static void setUser(UserEntity userEntity) {
+        Data.userEntity = userEntity;
     }
 }

@@ -1,13 +1,12 @@
 package server.handlers;
 
 import annotations.Handler;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import db.repository.impl.RepositoryFactory;
-import entities.MessageEntity;
-import entities.PasswordEntity;
-import entities.RoomEntity;
-import entities.UserEntity;
+import entities.*;
+import entities.dto.MessageDto;
+import entities.dto.UserDto;
+import entities.mappers.MessageMapper;
+import entities.mappers.UserMapper;
 import org.apache.log4j.Logger;
 import org.hibernate.exception.ConstraintViolationException;
 import server.GsonContainer;
@@ -16,8 +15,7 @@ import server.enums.Status;
 import server.models.UDPMessage;
 
 import java.net.SocketAddress;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class ActionsHandler {
     private static final Logger logger = Logger.getLogger(ActionsHandler.class);
@@ -29,16 +27,11 @@ public class ActionsHandler {
 
     @Handler(Action.REGISTRATION)
     public static UDPMessage registration(UDPMessage request) {
-        JsonObject packet = JsonParser.parseString(request.getBody()).getAsJsonObject();
-
         try {
-            UserEntity user = GsonContainer.getGson()
-                    .fromJson(packet.get("user").getAsString(), UserEntity.class);
             PasswordEntity password = GsonContainer.getGson()
-                    .fromJson(packet.get("password").getAsString(), PasswordEntity.class);
+                    .fromJson(request.getBody(), PasswordEntity.class);
 
-            RepositoryFactory.getUserRepository().save(user);
-            password.setUser(user);
+            RepositoryFactory.getUserRepository().save(password.getUser());
             RepositoryFactory.getPasswordRepository().save(password);
 
             return new UDPMessage(request.getAction(), null, Status.OK);
@@ -50,15 +43,15 @@ public class ActionsHandler {
 
     @Handler(Action.LOGIN)
     public static UDPMessage login(UDPMessage request) {
-        JsonObject packet = JsonParser.parseString(request.getBody()).getAsJsonObject();
-
-        UserEntity user = GsonContainer.getGson()
-                .fromJson(packet.get("user").getAsString(), UserEntity.class);
         PasswordEntity password = GsonContainer.getGson()
-                .fromJson(packet.get("password").getAsString(), PasswordEntity.class);
+                .fromJson(request.getBody(), PasswordEntity.class);
 
-        UserEntity dbUser = RepositoryFactory.getUserRepository().findByEmail(user.getEmail());
+        UserEntity dbUser = RepositoryFactory.getUserRepository().findByEmail(password.getUser().getEmail());
         PasswordEntity dbPassword = RepositoryFactory.getPasswordRepository().findByUser(dbUser);
+
+        for (RoomEntity room : dbUser.getRooms()) {
+            room.setUsers(null);
+        }
 
         if (Arrays.equals(dbPassword.getValue(), password.getValue())) {
             return new UDPMessage(request.getAction(), GsonContainer.getGson().toJson(dbUser), Status.OK);
@@ -87,24 +80,49 @@ public class ActionsHandler {
     @Handler(Action.GET_MESSAGES)
     public static UDPMessage getMessages(UDPMessage request) {
         RoomEntity room = GsonContainer.getGson().fromJson(request.getBody(), RoomEntity.class);
-        RoomEntity dbRoom = RepositoryFactory.getRoomRepository().findById(room.getId());
 
-        return new UDPMessage(request.getAction(), GsonContainer.getGson().toJson(dbRoom.getUsers()), Status.OK);
+        List<MessageEntity> dbMessages = RepositoryFactory.getMessageRepository().findForRoom(room);
+
+        List<MessageDto> messages = new ArrayList<>();
+        for (MessageEntity dbMessage : dbMessages) {
+            MessageDto messageDto = new MessageDto();
+            messageDto.setId(dbMessage.getId());
+            messageDto.setDateVal(dbMessage.getDateVal());
+            messageDto.setValue(dbMessage.getValue());
+            messageDto.setFromUser(UserMapper.INSTANCE.userToDto(dbMessage.getFromUser()));
+            messages.add(messageDto);
+        }
+
+        return new UDPMessage(request.getAction(), GsonContainer.getGson().toJson(messages), Status.OK);
     }
 
     @Handler(Action.GET_USERS)
     public static UDPMessage getUsers(UDPMessage request) {
         List<UserEntity> users = RepositoryFactory.getUserRepository().findAll();
 
-        return new UDPMessage(request.getAction(), GsonContainer.getGson().toJson(users), Status.OK);
+        List<UserDto> userDtos = new ArrayList<>();
+        for (UserEntity user : users) {
+            userDtos.add(UserMapper.INSTANCE.userToDto(user));
+        }
+
+        return new UDPMessage(request.getAction(), GsonContainer.getGson().toJson(userDtos), Status.OK);
     }
 
     @Handler(Action.ADD_ROOM)
     public static UDPMessage addRoom(UDPMessage request) {
         RoomEntity room = GsonContainer.getGson().fromJson(request.getBody(), RoomEntity.class);
+
+        Set<UserEntity> users = new HashSet<>();
+
+        for (UserEntity user : room.getUsers()) {
+            users.add(RepositoryFactory.getUserRepository().findById(user.getId()));
+        }
+
+        room.setUsers(users);
+
         RepositoryFactory.getRoomRepository().save(room);
 
-        UDPNotifier.getInstance().notify(room);
+        // UDPNotifier.getInstance().notify(room);
 
         return new UDPMessage(request.getAction(), GsonContainer.getGson().toJson(room), Status.OK);
     }
@@ -114,7 +132,7 @@ public class ActionsHandler {
         MessageEntity message = GsonContainer.getGson().fromJson(request.getBody(), MessageEntity.class);
         RepositoryFactory.getMessageRepository().save(message);
 
-        UDPNotifier.getInstance().notify(message);
+        // UDPNotifier.getInstance().notify(message);
 
         return new UDPMessage(request.getAction(), GsonContainer.getGson().toJson(message), Status.OK);
     }

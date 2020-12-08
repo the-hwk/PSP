@@ -26,8 +26,6 @@ public class UPDServer {
         DatagramSocket socket = new DatagramSocket(new InetSocketAddress(host, mainPort));
         UDPNotifier.getInstance().init(new InetSocketAddress(host, notifierPort));
 
-        new Thread(new ConsoleThread()).start();
-
         ExecutorService executor = Executors.newFixedThreadPool(maxThreads);
 
         System.out.println("The server is running!");

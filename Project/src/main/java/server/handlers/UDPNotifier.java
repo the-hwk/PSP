@@ -27,10 +27,12 @@ public class UDPNotifier {
 
     public void init(InetSocketAddress address) throws SocketException {
         socket = new DatagramSocket(address);
+        System.out.println("UDP Notifier started!");
     }
 
     public synchronized void add(UserEntity user, SocketAddress address) {
         clients.put(user, address);
+        System.out.println("Added new client: " + address.toString());
     }
 
     public synchronized void remove(UserEntity user) {
@@ -39,19 +41,19 @@ public class UDPNotifier {
 
     public void notify(RoomEntity room) {
         for (UserEntity user : room.getUsers()) {
-            sendData(user, GsonContainer.getGson().toJson(room));
+            sendData(Action.NOTIFY_ROOM, user, GsonContainer.getGson().toJson(room));
         }
     }
 
     public void notify(MessageEntity message) {
         for (UserEntity user : message.getToRoom().getUsers()) {
-            sendData(user, GsonContainer.getGson().toJson(message));
+            sendData(Action.NOTIFY_MESSAGE, user, GsonContainer.getGson().toJson(message));
         }
     }
 
-    private void sendData(UserEntity user, String s) {
+    private void sendData(Action action, UserEntity user, String s) {
         if (clients.containsKey(user)) {
-            UDPMessage message = new UDPMessage(Action.NOTIFY, s, Status.OK);
+            UDPMessage message = new UDPMessage(action, s, Status.OK);
 
             byte[] buffer = message.toString().getBytes();
 

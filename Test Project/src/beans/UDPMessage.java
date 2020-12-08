@@ -1,20 +1,13 @@
 package beans;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class UDPMessage {
     private final Action action;
-    private final Map<String, Object> properties;
+    private final String body;
     private final Status status;
 
-    public UDPMessage(Action action) {
-        this(action, new HashMap<String, Object>());
-    }
-
-    public UDPMessage(Action action, Map<String, Object> properties) {
+    public UDPMessage(Action action, String body) {
         this.action = action;
-        this.properties = properties;
+        this.body = body;
         this.status = null;
     }
 
@@ -22,8 +15,8 @@ public class UDPMessage {
         return action;
     }
 
-    public Map<String, Object> getProperties() {
-        return properties;
+    public String getBody() {
+        return body;
     }
 
     public Status getStatus() {

@@ -35,7 +35,7 @@ public class MessageEntity {
     }
 
     @Basic
-    @Column(name = "dateVal", nullable = false)
+    @Column(name = "date_val", nullable = false)
     public Timestamp getDateVal() {
         return dateVal;
     }

@@ -11,5 +11,6 @@ public enum Action {
     GET_USERS,
     ADD_ROOM,
     ADD_MESSAGE,
-    NOTIFY
+    NOTIFY_MESSAGE,
+    NOTIFY_ROOM
 }

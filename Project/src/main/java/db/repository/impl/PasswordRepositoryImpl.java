@@ -2,6 +2,11 @@ package db.repository.impl;
 
 import db.repository.PasswordRepository;
 import entities.PasswordEntity;
+import entities.UserEntity;
+import org.hibernate.Session;
+import utils.HibernateSessionFactoryUtil;
+
+import javax.persistence.Query;
 
 class PasswordRepositoryImpl extends RepositoryImpl<PasswordEntity> implements PasswordRepository {
     public static class SingletonHolder {
@@ -14,5 +19,14 @@ class PasswordRepositoryImpl extends RepositoryImpl<PasswordEntity> implements P
 
     private PasswordRepositoryImpl(Class<PasswordEntity> clazz) {
         super(clazz);
+    }
+
+    @Override
+    public PasswordEntity findByUser(UserEntity user) {
+        try (Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession()) {
+            Query query = session.createQuery("from PasswordEntity where user_id = :id");
+            query.setParameter("id", user.getId());
+            return (PasswordEntity) query.getSingleResult();
+        }
     }
 }

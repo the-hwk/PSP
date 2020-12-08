@@ -13,6 +13,7 @@ public class Client {
         InetSocketAddress address = new InetSocketAddress("localhost", 8080);
         DatagramSocket socket = new DatagramSocket();
 
+        /*
         UDPMessage request = new UDPMessage(Action.CREATE_NOTIFIER, Status.OK);
         byte[] buff = request.toString().getBytes();
         DatagramPacket packet = new DatagramPacket(buff, buff.length, address);
@@ -21,7 +22,7 @@ public class Client {
         socket.receive(packet);
         System.out.println(new String(packet.getData()));
 
-        new Scanner(System.in).nextLine();
+        new Scanner(System.in).nextLine();*/
 
         socket.close();
     }

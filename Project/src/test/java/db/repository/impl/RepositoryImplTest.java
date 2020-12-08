@@ -1,5 +1,6 @@
 package db.repository.impl;
 
+import entities.RoomEntity;
 import entities.UserEntity;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,13 @@ class RepositoryImplTest {
 
     @Test
     void save() {
+        UserEntity user = RepositoryFactory.getUserRepository().findById(1);
+
+        RoomEntity room = new RoomEntity();
+        room.setName("Test room");
+        room.addUser(user);
+
+        RepositoryFactory.getRoomRepository().save(room);
     }
 
     @Test

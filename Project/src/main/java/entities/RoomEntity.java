@@ -33,7 +33,7 @@ public class RoomEntity {
         this.name = name;
     }
 
-    @ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
     @JoinTable(
             name = "rooms_data",
             joinColumns = { @JoinColumn(name = "room_id") },
@@ -47,11 +47,11 @@ public class RoomEntity {
         this.users = details;
     }
 
-    public void addDetail(UserEntity detail) {
+    public void addUser(UserEntity detail) {
         users.add(detail);
     }
 
-    public void removeDetail(UserEntity detail) {
+    public void removeUser(UserEntity detail) {
         users.remove(detail);
     }
 
