@@ -33,7 +33,7 @@ public class UPDServer {
         while (!ServerStatus.isStopped()) {
             DatagramPacket packet = new DatagramPacket(new byte[buffSize], buffSize);
             socket.receive(packet);
-            System.out.println("New client: " + packet.getAddress());
+            System.out.println("Request from client: " + packet.getAddress());
             executor.execute(new UDPServerHandler(socket, packet));
         }
 

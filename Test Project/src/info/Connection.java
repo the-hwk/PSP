@@ -6,10 +6,7 @@ import beans.Status;
 import beans.UDPMessage;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
-import java.net.SocketException;
+import java.net.*;
 
 public class Connection {
     private static final int PORT = 8080;
@@ -19,6 +16,7 @@ public class Connection {
     public static boolean createConnection(String host) {
         try {
             socket = new DatagramSocket();
+
             address = new InetSocketAddress(host, PORT);
 
             UDPMessage request = new UDPMessage(Action.CONNECTION_OPEN, null);
@@ -48,13 +46,11 @@ public class Connection {
             System.out.println(e.getMessage());
         }
 
-        packet = new DatagramPacket(new byte[1024], 1024);
+        packet = new DatagramPacket(new byte[10000], 10000);
         try {
             socket.receive(packet);
         } catch (IOException e) {
             System.out.println(e.getMessage());
-        } finally {
-            socket.close();
         }
 
         return GsonContainer.getGson().fromJson(new String(packet.getData()).trim(), UDPMessage.class);

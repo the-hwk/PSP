@@ -25,6 +25,7 @@ public class UDPServerHandler implements Runnable {
     @Override
     public void run() {
         UDPMessage request = GsonContainer.getGson().fromJson(new String(packet.getData()).trim(), UDPMessage.class);
+        request.setSocket(packet.getSocketAddress());
         UDPMessage response = new UDPMessage(request.getAction(), null, Status.WRONG_UDP_MESSAGE);
 
         for (Method method : ActionsHandler.class.getMethods()) {

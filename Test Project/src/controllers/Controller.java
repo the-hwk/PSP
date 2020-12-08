@@ -1,8 +1,11 @@
 package controllers;
 
 import beans.*;
+import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import info.Connection;
+import info.Data;
+import info.NotifyListener;
 import netscape.javascript.JSObject;
 
 import java.sql.Timestamp;
@@ -40,6 +43,18 @@ public class Controller {
             windowObject.call("showPage", "main");
             windowObject.call("setUser", response.getBody());
             windowObject.call("renderRooms");
+
+            Data.setUser(GsonContainer.getGson().fromJson(response.getBody(), UserEntity.class));
+
+            NotifyListener.createConnection(Connection.getAddress().getHostName());
+            NotifyListener.setController(this);
+            request = new UDPMessage(Action.CREATE_NOTIFIER, response.getBody());
+            response = Connection.createRequest(request);
+
+            if (response.getStatus().equals(Status.OK)) {
+                System.out.println("Notifier created");
+                new Thread(new NotifyListener()).start();
+            }
         } else {
             windowObject.call("showError", "Неверные данные для входа");
         }
@@ -95,11 +110,10 @@ public class Controller {
     }
 
     public void createRoom(String name, String usersIdJson) {
-        System.out.println(usersIdJson);
         Set<UserEntity> users = GsonContainer.getGson().fromJson(usersIdJson, new TypeToken<Set<UserEntity>>() {}.getType());
 
         RoomEntity room = new RoomEntity();
-        room.setName(name);
+        room.setName(name); 
         room.setUsers(users);
 
         UDPMessage request = new UDPMessage(Action.ADD_ROOM, GsonContainer.getGson().toJson(room));
@@ -107,7 +121,6 @@ public class Controller {
 
         if (response.getStatus().equals(Status.OK)) {
             windowObject.call("showInfo", "Чат добавлен");
-            windowObject.call("addRoom", response.getBody(), null);
             windowObject.call("showPage", "main");
         } else {
             windowObject.call("showError", "Не удалось добавить чат");
@@ -136,10 +149,11 @@ public class Controller {
     }
 
     public void notify(MessageEntity message) {
-        windowObject.call("");
+        windowObject.call("notifyMessage", GsonContainer.getGson().toJson(message));
     }
 
     public void notify(RoomEntity room) {
-
+        windowObject.call("addRoomFromJson", GsonContainer.getGson().toJson(room));
+        windowObject.call("notifyRoom", GsonContainer.getGson().toJson(room));
     }
 }

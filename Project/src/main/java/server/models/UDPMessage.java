@@ -4,10 +4,14 @@ import server.GsonContainer;
 import server.enums.Action;
 import server.enums.Status;
 
+import java.net.InetAddress;
+import java.net.SocketAddress;
+
 public class UDPMessage {
     private final Action action;
     private final String body;
     private final Status status;
+    private SocketAddress socket;
 
     public UDPMessage(Action action, String body, Status status) {
         this.action = action;
@@ -25,6 +29,14 @@ public class UDPMessage {
 
     public Status getStatus() {
         return status;
+    }
+
+    public SocketAddress getSocket() {
+        return socket;
+    }
+
+    public void setSocket(SocketAddress socket) {
+        this.socket = socket;
     }
 
     @Override

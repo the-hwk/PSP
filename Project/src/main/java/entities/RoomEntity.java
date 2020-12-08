@@ -33,7 +33,7 @@ public class RoomEntity {
         this.name = name;
     }
 
-    @ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+    @ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER)
     @JoinTable(
             name = "rooms_data",
             joinColumns = { @JoinColumn(name = "room_id") },
@@ -68,6 +68,8 @@ public class RoomEntity {
 
     @Override
     public int hashCode() {
-        return id;
+        int result = getId();
+        result = 31 * result + (getName() != null ? getName().hashCode() : 0);
+        return result;
     }
 }

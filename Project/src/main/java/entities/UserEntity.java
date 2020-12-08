@@ -82,6 +82,10 @@ public class UserEntity {
 
     @Override
     public int hashCode() {
-        return id;
+        int result = getId();
+        result = 31 * result + (getEmail() != null ? getEmail().hashCode() : 0);
+        result = 31 * result + (getNickname() != null ? getNickname().hashCode() : 0);
+        result = 31 * result + getRoleId();
+        return result;
     }
 }

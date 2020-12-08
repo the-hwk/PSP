@@ -7,6 +7,7 @@ public class MessageDto {
     private String value;
     private Timestamp dateVal;
     private UserDto fromUser;
+    private RoomDto toRoom;
 
     public int getId() {
         return id;
@@ -38,5 +39,13 @@ public class MessageDto {
 
     public void setFromUser(UserDto fromUser) {
         this.fromUser = fromUser;
+    }
+
+    public RoomDto getToRoom() {
+        return toRoom;
+    }
+
+    public void setToRoom(RoomDto toRoom) {
+        this.toRoom = toRoom;
     }
 }

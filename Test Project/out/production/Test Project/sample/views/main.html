@@ -59,6 +59,10 @@
             }
         }
 
+        function addRoomFromJson(room, msg) {
+            addRoom(JSON.parse(room), null);
+        }
+
         function addMessage(message) {
             let container = document.createElement("div");
             container.classList.add("message");
@@ -144,16 +148,18 @@
             usersToAddRoom.push(USER.id);
         }
 
-        function notifyRoom(room) {
-            document.querySelector(`#${room.id}`).classList.add("notified-room");
+        function notifyRoom(roomJson) {
+            let room = JSON.parse(roomJson);
+            document.querySelector(`#room-${room.id}`).classList.add("notified-room");
         }
 
-        function notifyMessage(message) {
-            let room = document.querySelector(`#${message.to.id}`);
+        function notifyMessage(messageJson) {
+            let message = JSON.parse(messageJson);
+            let room = document.querySelector(`#room-${message.toRoom.id}`);
 
-            room.lastElementChild.children[0].innerText = `${message.from}:`;
+            room.lastElementChild.children[0].innerText = `${message.fromUser}:`;
             room.lastElementChild.children[1].innerText = `${message.value}:`;
-            room.lastElementChild.children[2].innerText = `${message.date}:`;
+            room.lastElementChild.children[2].innerText = `${message.dateVal}:`;
 
             if (room.id === currentRoomId) {
                 addMessage(message);

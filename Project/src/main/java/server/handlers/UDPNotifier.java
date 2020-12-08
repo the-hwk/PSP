@@ -3,6 +3,9 @@ package server.handlers;
 import entities.MessageEntity;
 import entities.RoomEntity;
 import entities.UserEntity;
+import entities.dto.MessageDto;
+import entities.mappers.RoomMapper;
+import entities.mappers.UserMapper;
 import server.GsonContainer;
 import server.enums.Action;
 import server.enums.Status;
@@ -32,7 +35,7 @@ public class UDPNotifier {
 
     public synchronized void add(UserEntity user, SocketAddress address) {
         clients.put(user, address);
-        System.out.println("Added new client: " + address.toString());
+        System.out.println("Added notifier for client: " + address.toString());
     }
 
     public synchronized void remove(UserEntity user) {
@@ -41,13 +44,20 @@ public class UDPNotifier {
 
     public void notify(RoomEntity room) {
         for (UserEntity user : room.getUsers()) {
-            sendData(Action.NOTIFY_ROOM, user, GsonContainer.getGson().toJson(room));
+            sendData(Action.NOTIFY_ROOM, user, GsonContainer.getGson().toJson(RoomMapper.INSTANCE.roomToDto(room)));
         }
     }
 
     public void notify(MessageEntity message) {
+        MessageDto messageDto = new MessageDto();
+        messageDto.setId(message.getId());
+        messageDto.setValue(message.getValue());
+        messageDto.setDateVal(message.getDateVal());
+        messageDto.setFromUser(UserMapper.INSTANCE.userToDto(message.getFromUser()));
+        messageDto.setToRoom(RoomMapper.INSTANCE.roomToDto(message.getToRoom()));
+
         for (UserEntity user : message.getToRoom().getUsers()) {
-            sendData(Action.NOTIFY_MESSAGE, user, GsonContainer.getGson().toJson(message));
+            sendData(Action.NOTIFY_MESSAGE, user, GsonContainer.getGson().toJson(messageDto));
         }
     }
 

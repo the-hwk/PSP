@@ -31,11 +31,15 @@ public class NotifyListener implements Runnable {
     @Override
     public void run() {
         while (true) {
-            DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
+            DatagramPacket packet = new DatagramPacket(new byte[10000], 10000);
             try {
+                System.out.println("Receive");
                 socket.receive(packet);
+                System.out.println("Receive READY");
 
                 UDPMessage message = GsonContainer.getGson().fromJson(new String(packet.getData()).trim(), UDPMessage.class);
+
+                System.out.println(message.getBody());
 
                 if (message.getAction().equals(Action.NOTIFY_MESSAGE)) {
                     controller.notify(GsonContainer.getGson().fromJson(message.getBody(), MessageEntity.class));
