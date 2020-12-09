@@ -7,9 +7,7 @@ import entities.PasswordEntity;
 import entities.RoomEntity;
 import entities.UserEntity;
 import entities.dto.MessageDto;
-import entities.dto.RoomDto;
 import entities.dto.UserDto;
-import entities.mappers.RoomMapper;
 import entities.mappers.UserMapper;
 import org.apache.log4j.Logger;
 import org.hibernate.exception.ConstraintViolationException;
@@ -18,6 +16,7 @@ import server.enums.Action;
 import server.enums.Status;
 import server.models.UDPMessage;
 
+import java.net.InetSocketAddress;
 import java.util.*;
 
 public class ActionsHandler {
@@ -65,9 +64,13 @@ public class ActionsHandler {
 
     @Handler(Action.CREATE_NOTIFIER)
     public static UDPMessage createNotifier(UDPMessage request) {
-        UserEntity user = GsonContainer.getGson().fromJson(request.getBody(), UserEntity.class);
+        String[] parts = request.getBody().split("\n");
 
-        UDPNotifier.getInstance().add(user, request.getSocket());
+        UserEntity user = GsonContainer.getGson().fromJson(parts[0], UserEntity.class);
+        String host = parts[1];
+        int port = Integer.parseInt(parts[2]);
+
+        UDPNotifier.getInstance().add(user, new InetSocketAddress(host, port));
 
         return new UDPMessage(request.getAction(), null, Status.OK);
     }
@@ -115,16 +118,8 @@ public class ActionsHandler {
     public static UDPMessage addRoom(UDPMessage request) {
         RoomEntity room = GsonContainer.getGson().fromJson(request.getBody(), RoomEntity.class);
 
-        /*
-        Set<UserEntity> users = new HashSet<>();
-
-        for (UserEntity user : room.getUsers()) {
-            users.add(RepositoryFactory.getUserRepository().findById(user.getId()));
-        }
-
-        room.setUsers(users);*/
-
         RepositoryFactory.getRoomRepository().save(room);
+        room = RepositoryFactory.getRoomRepository().findById(room.getId());
 
         UDPNotifier.getInstance().notify(room);
 

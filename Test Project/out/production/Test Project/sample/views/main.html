@@ -86,7 +86,11 @@
 
             container.append(infoContainer, value);
 
-            document.querySelector("#messages-container").appendChild(container);
+            let messagesContainer = document.querySelector("#messages-container");
+
+            messagesContainer.appendChild(container);
+
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
         function fillUsersSelect(usersJson) {
@@ -157,15 +161,19 @@
             let message = JSON.parse(messageJson);
             let room = document.querySelector(`#room-${message.toRoom.id}`);
 
-            room.lastElementChild.children[0].innerText = `${message.fromUser}:`;
-            room.lastElementChild.children[1].innerText = `${message.value}:`;
-            room.lastElementChild.children[2].innerText = `${message.dateVal}:`;
+            room.lastElementChild.children[0].innerText = `${message.fromUser.nickname}:`;
+            let valueLength = Math.round(room.clientWidth / 14);
+            room.lastElementChild.children[1].innerText = `${message.value.substr(0, valueLength)}`;
+            let date = message.dateVal.split(" ");
+            room.lastElementChild.children[2].innerText = `${date[3]} ${date[4]}`;
 
-            if (room.id === currentRoomId) {
+            if (room.id.replace("room-", "") === currentRoomId) {
                 addMessage(message);
             } else {
                 room.classList.add("notified-room");
             }
+
+            document.querySelector("#message-value").value = "";
         }
 
         function setUser(user) {
@@ -366,12 +374,8 @@
 
         <div id="messages-block">
             <div id="messages-container">
-                <div class="message">
-                    <div>
-                        <span>Пользователь</span>
-                        <span>Время</span>
-                    </div>
-                    <span>Текст сообщения</span>
+                <div class="messages-container-header">
+                    <span>Выберите чат или создайте</span>
                 </div>
             </div>
             <div id="message-form">
@@ -500,6 +504,17 @@
         display: none;
     }
 
+    .messages-container-header {
+        flex: 1 0 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .messages-container-header>span {
+        color: var(--dark-text);
+        margin: auto;
+    }
+
     #rooms-block {
         flex: 1 0 0;
         border: 1px solid var(--light-bg);
@@ -538,7 +553,7 @@
         border-left: 5px solid var(--light-bg);
         padding: 5px;
         cursor: pointer;
-        margin-top: 15px;
+        border-bottom: 1px solid var(--light-bg);
         transition-property: background-color, border-left-color;
         transition-duration: 0.5s;
     }
@@ -562,6 +577,11 @@
     .room>div>span:nth-child(2) {
         color: var(--dark-text);
         margin-left: 5px;
+        margin-right: 5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 1 0 0;
     }
 
     .room>div>span:nth-child(3) {
@@ -587,6 +607,11 @@
         flex-direction: column;
         overflow-y: auto;
         margin: 10px 15px 10px 15px;
+        flex: 1 0 0;
+    }
+
+    #messages-container>span:first-child {
+        color: var(--dark-text);
     }
 
     .message {
@@ -615,6 +640,7 @@
 
     .message>span {
         color: var(--text);
+        word-break: break-all;
     }
 
     #message-form {
@@ -622,7 +648,6 @@
         flex-direction: row;
         padding: 15px;
         border-top: 1px solid var(--dark-color);
-        margin-top: auto;
     }
 
     #message-form>input {

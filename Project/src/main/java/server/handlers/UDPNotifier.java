@@ -13,12 +13,14 @@ import server.models.UDPMessage;
 
 import java.io.IOException;
 import java.net.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
 import java.util.HashMap;
 import java.util.Map;
 
 public class UDPNotifier {
-    private Map<UserEntity, SocketAddress> clients = new HashMap<>();
-    private DatagramSocket socket;
+    private final Map<UserEntity, InetSocketAddress> clients = new HashMap<>();
+    private DatagramChannel channel;
 
     public static class SingletonHolder {
         public static final UDPNotifier HOLDER_INSTANCE = new UDPNotifier();
@@ -28,12 +30,13 @@ public class UDPNotifier {
         return SingletonHolder.HOLDER_INSTANCE;
     }
 
-    public void init(InetSocketAddress address) throws SocketException {
-        socket = new DatagramSocket(address);
+    public void init(InetSocketAddress address) throws IOException {
+        channel = DatagramChannel.open();
+        channel.socket().bind(address);
         System.out.println("UDP Notifier started!");
     }
 
-    public synchronized void add(UserEntity user, SocketAddress address) {
+    public synchronized void add(UserEntity user, InetSocketAddress address) {
         clients.put(user, address);
         System.out.println("Added notifier for client: " + address.toString());
     }
@@ -65,10 +68,11 @@ public class UDPNotifier {
         if (clients.containsKey(user)) {
             UDPMessage message = new UDPMessage(action, s, Status.OK);
 
-            byte[] buffer = message.toString().getBytes();
+            ByteBuffer buffer = ByteBuffer.wrap(GsonContainer.getGson().toJson(message).getBytes());
 
             try {
-                socket.send(new DatagramPacket(buffer, buffer.length, clients.get(user)));
+                System.out.println("Notify user " + clients.get(user).getAddress().getHostAddress() + ":" + clients.get(user).getPort());
+                channel.send(buffer, clients.get(user));
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -5,6 +5,7 @@ import com.google.gson.reflect.TypeToken;
 import info.Connection;
 import info.Data;
 import info.NotifyListener;
+import javafx.application.Platform;
 import netscape.javascript.JSObject;
 
 import java.sql.Timestamp;
@@ -45,17 +46,17 @@ public class Controller {
 
             Data.setUser(GsonContainer.getGson().fromJson(response.getBody(), UserEntity.class));
 
-            NotifyListener.createConnection(Connection.getAddress().getHostName());
-            NotifyListener.setController(this);
-            request = new UDPMessage(Action.CREATE_NOTIFIER, response.getBody());
+            NotifyListener listener = new NotifyListener(Connection.getAddress().getHostName(), this);
+
+            String message = response.getBody() + "\n" + listener.getHost() + "\n" + listener.getPort();
+            request = new UDPMessage(Action.CREATE_NOTIFIER, message);
             response = Connection.createRequest(request);
 
             if (response.getStatus().equals(Status.OK)) {
-                System.out.println("Notifier created");
-                new Thread(new NotifyListener()).start();
+                new Thread(listener).start();
+            } else {
+                windowObject.call("showError", "Неверные данные для входа");
             }
-        } else {
-            windowObject.call("showError", "Неверные данные для входа");
         }
     }
 
@@ -100,7 +101,6 @@ public class Controller {
         UDPMessage response = Connection.createRequest(request);
 
         if (response.getStatus().equals(Status.OK)) {
-            System.out.println(response.getBody());
             return response.getBody();
         } else {
             System.out.println("error");
@@ -148,11 +148,15 @@ public class Controller {
     }
 
     public void notify(MessageEntity message) {
-        windowObject.call("notifyMessage", GsonContainer.getGson().toJson(message));
+        Platform.runLater(() -> {
+            windowObject.call("notifyMessage", GsonContainer.getGson().toJson(message));
+        });
     }
 
     public void notify(RoomEntity room) {
-        windowObject.call("addRoomFromJson", GsonContainer.getGson().toJson(room));
-        windowObject.call("notifyRoom", GsonContainer.getGson().toJson(room));
+        Platform.runLater(() -> {
+            windowObject.call("addRoomFromJson", GsonContainer.getGson().toJson(room));
+            windowObject.call("notifyRoom", GsonContainer.getGson().toJson(room));
+        });
     }
 }

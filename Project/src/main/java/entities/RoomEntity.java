@@ -33,7 +33,7 @@ public class RoomEntity {
         this.name = name;
     }
 
-    @ManyToMany(mappedBy = "rooms", cascade = { CascadeType.PERSIST }, fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "rooms", cascade = { CascadeType.PERSIST }, fetch = FetchType.EAGER)
     public Set<UserEntity> getUsers() {
         return users;
     }

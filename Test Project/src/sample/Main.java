@@ -36,6 +36,8 @@ public class Main extends Application {
         VBox.setVgrow(webView, Priority.ALWAYS);
 
         primaryStage.setTitle("Чат");
+        primaryStage.setMinWidth(1000);
+        primaryStage.setMinHeight(600);
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
     }
