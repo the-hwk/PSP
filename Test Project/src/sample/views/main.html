@@ -243,6 +243,9 @@
             let password = document.querySelector("#input-login-password").value;
 
             app.login(email, password);
+
+            document.querySelector("#input-login-email").value = "";
+            document.querySelector("#input-login-password").value = "";
         }
 
         function registration() {
@@ -251,6 +254,10 @@
             let password = document.querySelector("#input-reg-password").value;
 
             app.registration(email, name, password);
+
+            document.querySelector("#input-reg-email").value = "";
+            document.querySelector("#input-reg-name").value = "";
+            document.querySelector("#input-reg-password").value = "";
         }
 
         function createRoom() {
@@ -264,11 +271,17 @@
             }
 
             app.createRoom(name, JSON.stringify(usersId));
+
+            document.querySelector("#input-room-name").value = "";
+            document.querySelector("#select-users").innerHTML = "";
         }
 
         function createMessage() {
             let value = document.querySelector("#message-value").value;
             app.createMessage(USER.id, currentRoomId, value);
+
+            document.querySelector("#message-value").value = "";
+            document.querySelector("#users-nicknames").innerHTML = "";
         }
 
         window.onload = function () {
@@ -339,6 +352,9 @@
                 <label for="input-reg-password">Пароль</label>
                 <input id="input-reg-password" type="password">
             </div>
+            <div class="link-container">
+                <span onclick="showPage('login')">Уже зарегистрированы?</span>
+            </div>
             <div class="button-container">
                 <button onclick="registration()">
                     <span>Зарегистрироваться</span>
@@ -347,6 +363,7 @@
         </div>
     </div>
 
+    <!--Чат-->
     <div id="page-main" class="wrapper not-visible">
         <div id="rooms-block">
             <button onclick="openRoomForm()">
@@ -387,6 +404,7 @@
         </div>
     </div>
 
+    <!--Добавление чата-->
     <div id="page-room-adder" class="wrapper not-visible">
         <div class="form">
             <span>Добавление чата</span>
@@ -407,6 +425,10 @@
 
                 </select>
                 <button onclick="addUserToRoom()">+</button>
+            </div>
+
+            <div class="link-container">
+                <span onclick="showPage('main')">Назад</span>
             </div>
 
             <div class="button-container">

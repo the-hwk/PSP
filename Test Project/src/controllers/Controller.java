@@ -2,9 +2,13 @@ package controllers;
 
 import beans.*;
 import com.google.gson.reflect.TypeToken;
-import info.Connection;
-import info.Data;
-import info.NotifyListener;
+import containers.GsonContainer;
+import data.UDPMessage;
+import enums.Action;
+import enums.Status;
+import handlers.ConnectionHandler;
+import data.Data;
+import handlers.NotifyHandler;
 import javafx.application.Platform;
 import netscape.javascript.JSObject;
 
@@ -20,7 +24,7 @@ public class Controller {
     }
 
     public void createConnection(String host) {
-        if (Connection.createConnection(host)) {
+        if (ConnectionHandler.createConnection(host)) {
             windowObject.call("showPage", "login");
         } else {
             windowObject.call("showError", "Не удалось подключиться к серверу");
@@ -36,7 +40,7 @@ public class Controller {
         password.setValue(passwordStr.getBytes());
 
         UDPMessage request = new UDPMessage(Action.LOGIN, GsonContainer.getGson().toJson(password));
-        UDPMessage response = Connection.createRequest(request);
+        UDPMessage response = ConnectionHandler.createRequest(request);
 
         if (response.getStatus().equals(Status.OK)) {
             windowObject.call("showInfo", "Вы вошли в свой аккаунт");
@@ -46,11 +50,11 @@ public class Controller {
 
             Data.setUser(GsonContainer.getGson().fromJson(response.getBody(), UserEntity.class));
 
-            NotifyListener listener = new NotifyListener(Connection.getAddress().getHostName(), this);
+            NotifyHandler listener = new NotifyHandler(this);
 
-            String message = response.getBody() + "\n" + listener.getHost() + "\n" + listener.getPort();
+            String message = response.getBody() + "\n" + listener.getPort();
             request = new UDPMessage(Action.CREATE_NOTIFIER, message);
-            response = Connection.createRequest(request);
+            response = ConnectionHandler.createRequest(request);
 
             if (response.getStatus().equals(Status.OK)) {
                 new Thread(listener).start();
@@ -70,7 +74,7 @@ public class Controller {
         password.setValue(passwordStr.getBytes());
 
         UDPMessage request = new UDPMessage(Action.REGISTRATION, GsonContainer.getGson().toJson(password));
-        UDPMessage response = Connection.createRequest(request);
+        UDPMessage response = ConnectionHandler.createRequest(request);
 
         if (response.getStatus().equals(Status.OK)) {
             windowObject.call("showInfo", "Вы зарегистрированы");
@@ -84,7 +88,7 @@ public class Controller {
 
     public void getUsers() {
         UDPMessage request = new UDPMessage(Action.GET_USERS, null);
-        UDPMessage response = Connection.createRequest(request);
+        UDPMessage response = ConnectionHandler.createRequest(request);
 
         if (response.getStatus().equals(Status.OK)) {
             windowObject.call("fillUsersSelect", response.getBody());
@@ -98,7 +102,7 @@ public class Controller {
         room.setId(roomId);
 
         UDPMessage request = new UDPMessage(Action.GET_MESSAGES, GsonContainer.getGson().toJson(room));
-        UDPMessage response = Connection.createRequest(request);
+        UDPMessage response = ConnectionHandler.createRequest(request);
 
         if (response.getStatus().equals(Status.OK)) {
             return response.getBody();
@@ -116,7 +120,7 @@ public class Controller {
         room.setUsers(users);
 
         UDPMessage request = new UDPMessage(Action.ADD_ROOM, GsonContainer.getGson().toJson(room));
-        UDPMessage response = Connection.createRequest(request);
+        UDPMessage response = ConnectionHandler.createRequest(request);
 
         if (response.getStatus().equals(Status.OK)) {
             windowObject.call("showInfo", "Чат добавлен");
@@ -140,7 +144,7 @@ public class Controller {
         message.setToRoom(room);
 
         UDPMessage request = new UDPMessage(Action.ADD_MESSAGE, GsonContainer.getGson().toJson(message));
-        UDPMessage response = Connection.createRequest(request);
+        UDPMessage response = ConnectionHandler.createRequest(request);
 
         if (!response.getStatus().equals(Status.OK)) {
             windowObject.call("showError", "Ошибка отправки сообщения");

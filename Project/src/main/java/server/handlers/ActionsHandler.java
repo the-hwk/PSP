@@ -11,7 +11,7 @@ import entities.dto.UserDto;
 import entities.mappers.UserMapper;
 import org.apache.log4j.Logger;
 import org.hibernate.exception.ConstraintViolationException;
-import server.GsonContainer;
+import containers.GsonContainer;
 import server.enums.Action;
 import server.enums.Status;
 import server.models.UDPMessage;
@@ -49,6 +49,11 @@ public class ActionsHandler {
                 .fromJson(request.getBody(), PasswordEntity.class);
 
         UserEntity dbUser = RepositoryFactory.getUserRepository().findByEmail(password.getUser().getEmail());
+
+        if (NotifierHandler.getInstance().contains(dbUser)) {
+            return new UDPMessage(request.getAction(), null, Status.USER_LOGGED);
+        }
+
         PasswordEntity dbPassword = RepositoryFactory.getPasswordRepository().findByUser(dbUser);
 
         for (RoomEntity room : dbUser.getRooms()) {
@@ -67,10 +72,9 @@ public class ActionsHandler {
         String[] parts = request.getBody().split("\n");
 
         UserEntity user = GsonContainer.getGson().fromJson(parts[0], UserEntity.class);
-        String host = parts[1];
-        int port = Integer.parseInt(parts[2]);
+        int port = Integer.parseInt(parts[1]);
 
-        UDPNotifier.getInstance().add(user, new InetSocketAddress(host, port));
+        NotifierHandler.getInstance().add(user, new InetSocketAddress(request.getHost(), port));
 
         return new UDPMessage(request.getAction(), null, Status.OK);
     }
@@ -121,7 +125,7 @@ public class ActionsHandler {
         RepositoryFactory.getRoomRepository().save(room);
         room = RepositoryFactory.getRoomRepository().findById(room.getId());
 
-        UDPNotifier.getInstance().notify(room);
+        NotifierHandler.getInstance().notify(room);
 
         return new UDPMessage(request.getAction(), null, Status.OK);
     }
@@ -132,7 +136,7 @@ public class ActionsHandler {
         RepositoryFactory.getMessageRepository().save(message);
         message = RepositoryFactory.getMessageRepository().findById(message.getId());
 
-        UDPNotifier.getInstance().notify(message);
+        NotifierHandler.getInstance().notify(message);
 
         return new UDPMessage(request.getAction(),null, Status.OK);
     }

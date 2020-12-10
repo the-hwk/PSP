@@ -1,7 +1,8 @@
 package server;
 
-import server.handlers.UDPNotifier;
-import server.handlers.UDPServerHandler;
+import server.handlers.NotifierHandler;
+import server.handlers.ServerHandler;
+import server.models.AppConfig;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -12,19 +13,16 @@ import java.util.concurrent.Executors;
 
 public class UPDServer {
     public static void main(String[] args) throws IOException {
-        if (args.length != 5) {
-            System.out.println("Wrong args! Should be <host> <main_port> <notifier_port> <max_threads> <max_message_size>");
-            return;
-        }
+        AppConfig.getInstance().init();
 
-        String host = args[0];
-        int mainPort = Integer.parseInt(args[1]);
-        int notifierPort = Integer.parseInt(args[2]);
-        int maxThreads = Integer.parseInt(args[3]);
-        int buffSize = Integer.parseInt(args[4]);
+        String host = AppConfig.getInstance().getProperty("host");
+        int mainPort = Integer.parseInt(AppConfig.getInstance().getProperty("data_port"));
+        int notifierPort = Integer.parseInt(AppConfig.getInstance().getProperty("notifier_port"));
+        int maxThreads = Integer.parseInt(AppConfig.getInstance().getProperty("thread_pool_size"));
+        int buffSize = Integer.parseInt(AppConfig.getInstance().getProperty("max_data_message_size"));
 
         DatagramSocket socket = new DatagramSocket(new InetSocketAddress(host, mainPort));
-        UDPNotifier.getInstance().init(new InetSocketAddress(host, notifierPort));
+        NotifierHandler.getInstance().init(new InetSocketAddress(host, notifierPort));
 
         ExecutorService executor = Executors.newFixedThreadPool(maxThreads);
 
@@ -34,7 +32,7 @@ public class UPDServer {
             DatagramPacket packet = new DatagramPacket(new byte[buffSize], buffSize);
             socket.receive(packet);
             System.out.println("Request from client: " + packet.getAddress());
-            executor.execute(new UDPServerHandler(socket, packet));
+            executor.execute(new ServerHandler(socket, packet));
         }
 
         if (!socket.isClosed()) {

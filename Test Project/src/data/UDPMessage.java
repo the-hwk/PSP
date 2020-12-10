@@ -1,19 +1,18 @@
-package server.models;
+package data;
 
 import containers.GsonContainer;
-import server.enums.Action;
-import server.enums.Status;
+import enums.Action;
+import enums.Status;
 
 public class UDPMessage {
     private final Action action;
     private final String body;
     private final Status status;
-    private String host;
 
-    public UDPMessage(Action action, String body, Status status) {
+    public UDPMessage(Action action, String body) {
         this.action = action;
         this.body = body;
-        this.status = status;
+        this.status = null;
     }
 
     public Action getAction() {
@@ -26,14 +25,6 @@ public class UDPMessage {
 
     public Status getStatus() {
         return status;
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package sample;
 
 import controllers.Controller;
+import data.AppConfig;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.Priority;
@@ -15,6 +16,8 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        AppConfig.getInstance().init();
+
         WebView webView = new WebView();
 
         WebEngine engine = webView.getEngine();
@@ -35,9 +38,9 @@ public class Main extends Application {
 
         VBox.setVgrow(webView, Priority.ALWAYS);
 
-        primaryStage.setTitle("Чат");
-        primaryStage.setMinWidth(1000);
-        primaryStage.setMinHeight(600);
+        primaryStage.setTitle(AppConfig.getInstance().getProperty("app_name"));
+        primaryStage.setMinWidth(Double.parseDouble(AppConfig.getInstance().getProperty("min_width")));
+        primaryStage.setMinHeight(Double.parseDouble(AppConfig.getInstance().getProperty("min_height")));
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
     }
