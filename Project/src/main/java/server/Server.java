@@ -1,8 +1,7 @@
 package server;
 
 import server.handlers.NotifierHandler;
-import server.handlers.ServerHandler;
-import server.models.AppConfig;
+import server.handlers.ClientDataHandler;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -11,7 +10,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class UPDServer {
+public class Server {
     public static void main(String[] args) throws IOException {
         AppConfig.getInstance().init();
 
@@ -32,7 +31,7 @@ public class UPDServer {
             DatagramPacket packet = new DatagramPacket(new byte[buffSize], buffSize);
             socket.receive(packet);
             System.out.println("Request from client: " + packet.getAddress());
-            executor.execute(new ServerHandler(socket, packet));
+            executor.execute(new ClientDataHandler(socket, packet));
         }
 
         if (!socket.isClosed()) {

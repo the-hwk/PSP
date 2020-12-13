@@ -1,13 +1,16 @@
 package controllers;
 
-import beans.*;
+import beans.MessageEntity;
+import beans.PasswordEntity;
+import beans.RoomEntity;
+import beans.UserEntity;
 import com.google.gson.reflect.TypeToken;
 import containers.GsonContainer;
+import data.Data;
 import data.UDPMessage;
 import enums.Action;
 import enums.Status;
 import handlers.ConnectionHandler;
-import data.Data;
 import handlers.NotifyHandler;
 import javafx.application.Platform;
 import netscape.javascript.JSObject;
@@ -24,11 +27,15 @@ public class Controller {
     }
 
     public void createConnection(String host) {
-        if (ConnectionHandler.createConnection(host)) {
-            windowObject.call("showPage", "login");
-        } else {
-            windowObject.call("showError", "Не удалось подключиться к серверу");
-        }
+        ConnectionHandler.createConnection(host, (response -> {
+            Platform.runLater(() -> {
+                if (response != null && response.getStatus().equals(Status.OK)) {
+                    windowObject.call("showPage", "login");
+                } else {
+                    windowObject.call("showError", "Не удалось подключиться к серверу");
+                }
+            });
+        }));
     }
 
     public void login(String email, String passwordStr) {
@@ -40,28 +47,49 @@ public class Controller {
         password.setValue(passwordStr.getBytes());
 
         UDPMessage request = new UDPMessage(Action.LOGIN, GsonContainer.getGson().toJson(password));
-        UDPMessage response = ConnectionHandler.createRequest(request);
 
-        if (response.getStatus().equals(Status.OK)) {
-            windowObject.call("showInfo", "Вы вошли в свой аккаунт");
-            windowObject.call("showPage", "main");
-            windowObject.call("setUser", response.getBody());
-            windowObject.call("renderRooms");
+        ConnectionHandler.createRequest(request, (response) -> {
+            Platform.runLater(() -> {
+                if (response != null) {
+                    if (response.getStatus().equals(Status.OK)) {
+                        windowObject.call("showInfo", "Вы вошли в свой аккаунт");
+                        windowObject.call("showPage", "main");
+                        windowObject.call("setUser", response.getBody());
+                        windowObject.call("renderRooms");
 
-            Data.setUser(GsonContainer.getGson().fromJson(response.getBody(), UserEntity.class));
+                        Data.setUser(GsonContainer.getGson().fromJson(response.getBody(), UserEntity.class));
+                        createNotifier();
+                    } else {
+                        windowObject.call("showError", "Ошибка на сервере");
+                    }
+                } else {
+                    windowObject.call("showError", "Не удалось получить ответ от сервера");
+                }
+            });
+        });
+    }
 
-            NotifyHandler listener = new NotifyHandler(this);
+    public void createNotifier() {
+        NotifyHandler listener = new NotifyHandler(this);
 
-            String message = response.getBody() + "\n" + listener.getPort();
-            request = new UDPMessage(Action.CREATE_NOTIFIER, message);
-            response = ConnectionHandler.createRequest(request);
+        String message = GsonContainer.getGson().toJson(Data.getUser()) + "\n" + listener.getPort();
 
-            if (response.getStatus().equals(Status.OK)) {
-                new Thread(listener).start();
-            } else {
-                windowObject.call("showError", "Неверные данные для входа");
-            }
-        }
+        UDPMessage request = new UDPMessage(Action.CREATE_NOTIFIER, message);
+
+        ConnectionHandler.createRequest(request, (response -> {
+            Platform.runLater(() -> {
+                if (response != null) {
+                    if (response.getStatus().equals(Status.OK)) {
+                        Data.setNotifierThread(new Thread(listener));
+                        Data.getNotifierThread().start();
+                    } else {
+                        windowObject.call("showError", "Неверные данные для входа");
+                    }
+                } else {
+                    windowObject.call("showError", "Не удалось получить ответ от сервера");
+                }
+            });
+        }));
     }
 
     public void registration(String email, String name, String passwordStr) {
@@ -74,42 +102,63 @@ public class Controller {
         password.setValue(passwordStr.getBytes());
 
         UDPMessage request = new UDPMessage(Action.REGISTRATION, GsonContainer.getGson().toJson(password));
-        UDPMessage response = ConnectionHandler.createRequest(request);
 
-        if (response.getStatus().equals(Status.OK)) {
-            windowObject.call("showInfo", "Вы зарегистрированы");
-            windowObject.call("showPage", "login");
-        } else if (response.getStatus().equals(Status.USER_DUPLICATE)) {
-            windowObject.call("showError", "Такой пользователь уже существует");
-        } else {
-            windowObject.call("showError", "Ошибка на сервере");
-        }
+        ConnectionHandler.createRequest(request, (response -> {
+            Platform.runLater(() -> {
+                if (response != null) {
+                    if (response.getStatus().equals(Status.OK)) {
+                        windowObject.call("showInfo", "Вы зарегистрированы");
+                        windowObject.call("showPage", "login");
+                    } else if (response.getStatus().equals(Status.USER_DUPLICATE)) {
+                        windowObject.call("showError", "Такой пользователь уже существует");
+                    } else {
+                        windowObject.call("showError", "Ошибка на сервере");
+                    }
+                } else {
+                    windowObject.call("showError", "Не удалось получить ответ от сервера");
+                }
+            });
+        }));
     }
 
     public void getUsers() {
         UDPMessage request = new UDPMessage(Action.GET_USERS, null);
-        UDPMessage response = ConnectionHandler.createRequest(request);
 
-        if (response.getStatus().equals(Status.OK)) {
-            windowObject.call("fillUsersSelect", response.getBody());
-        } else {
-            windowObject.call("showError", "Не удалось получить данные о пользователях");
-        }
+        ConnectionHandler.createRequest(request, (response -> {
+            Platform.runLater(() -> {
+                if (response != null) {
+                    if (response.getStatus().equals(Status.OK)) {
+                        windowObject.call("fillUsersSelect", response.getBody());
+                    } else {
+                        windowObject.call("showError", "Не удалось получить данные о пользователях");
+                    }
+                } else {
+                    windowObject.call("showError", "Не удалось получить ответ от сервера");
+                }
+            });
+
+        }));
     }
 
-    public String getMessages(int roomId) {
+    public void getMessages(int roomId) {
         RoomEntity room = new RoomEntity();
         room.setId(roomId);
 
         UDPMessage request = new UDPMessage(Action.GET_MESSAGES, GsonContainer.getGson().toJson(room));
-        UDPMessage response = ConnectionHandler.createRequest(request);
 
-        if (response.getStatus().equals(Status.OK)) {
-            return response.getBody();
-        } else {
-            System.out.println("error");
-            return null;
-        }
+        ConnectionHandler.createRequest(request, (response -> {
+            Platform.runLater(() -> {
+                if (response != null) {
+                    if (response.getStatus().equals(Status.OK)) {
+                        windowObject.call("appRenderMessages", response.getBody());
+                    } else {
+                        windowObject.call("showError", "Не удалось получить список сообщений");
+                    }
+                } else {
+                    windowObject.call("showError", "Не удалось получить ответ от сервера");
+                }
+            });
+        }));
     }
 
     public void createRoom(String name, String usersIdJson) {
@@ -120,14 +169,21 @@ public class Controller {
         room.setUsers(users);
 
         UDPMessage request = new UDPMessage(Action.ADD_ROOM, GsonContainer.getGson().toJson(room));
-        UDPMessage response = ConnectionHandler.createRequest(request);
 
-        if (response.getStatus().equals(Status.OK)) {
-            windowObject.call("showInfo", "Чат добавлен");
-            windowObject.call("showPage", "main");
-        } else {
-            windowObject.call("showError", "Не удалось добавить чат");
-        }
+        ConnectionHandler.createRequest(request, (response -> {
+            Platform.runLater(() -> {
+                if (response != null) {
+                    if (response.getStatus().equals(Status.OK)) {
+                        windowObject.call("showInfo", "Чат добавлен");
+                        windowObject.call("showPage", "main");
+                    } else {
+                        windowObject.call("showError", "Не удалось добавить чат");
+                    }
+                } else {
+                    windowObject.call("showError", "Не удалось получить ответ от сервера");
+                }
+            });
+        }));
     }
 
     public void createMessage(int userId, int roomId, String value) {
@@ -144,11 +200,18 @@ public class Controller {
         message.setToRoom(room);
 
         UDPMessage request = new UDPMessage(Action.ADD_MESSAGE, GsonContainer.getGson().toJson(message));
-        UDPMessage response = ConnectionHandler.createRequest(request);
 
-        if (!response.getStatus().equals(Status.OK)) {
-            windowObject.call("showError", "Ошибка отправки сообщения");
-        }
+        ConnectionHandler.createRequest(request, (response -> {
+            Platform.runLater(() -> {
+                if (response != null) {
+                    if (!response.getStatus().equals(Status.OK)) {
+                        windowObject.call("showError", "Ошибка отправки сообщения");
+                    }
+                } else {
+                    windowObject.call("showError", "Не удалось получить ответ от сервера");
+                }
+            });
+        }));
     }
 
     public void notify(MessageEntity message) {

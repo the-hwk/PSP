@@ -12,5 +12,6 @@ public enum Action {
     ADD_ROOM,
     ADD_MESSAGE,
     NOTIFY_MESSAGE,
-    NOTIFY_ROOM
+    NOTIFY_ROOM,
+    CLOSE_NOTIFIER
 }

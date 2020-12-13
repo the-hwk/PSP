@@ -185,7 +185,11 @@
         }
 
         function getMessages() {
-            renderMessages(JSON.parse(app.getMessages(currentRoomId)));
+            app.getMessages(currentRoomId);
+        }
+
+        function appRenderMessages(messages) {
+            renderMessages(JSON.parse(messages));
         }
 
         function showPage(page) {
@@ -370,22 +374,7 @@
                 <span>Добавить чат</span>
             </button>
             <div id="rooms-container">
-                <div id="0" class="room">
-                    <span>Название комнаты</span>
-                    <div>
-                        <span>От кого:</span>
-                        <span>Последнее сообщение</span>
-                        <span>Время</span>
-                    </div>
-                </div>
-                <div id="1" class="room">
-                    <span>Название комнаты</span>
-                    <div>
-                        <span>От кого:</span>
-                        <span>Последнее сообщение</span>
-                        <span>Время</span>
-                    </div>
-                </div>
+
             </div>
         </div>
 
@@ -774,6 +763,7 @@
         color: var(--text);
         border: 1px solid var(--light-bg);
         outline: none;
+        width: 300px;
     }
 
     .select-container>button {

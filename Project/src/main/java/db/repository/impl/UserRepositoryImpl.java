@@ -37,6 +37,7 @@ class UserRepositoryImpl extends RepositoryImpl<UserEntity> implements UserRepos
             CriteriaQuery<UserEntity> all = cq.select(rootEntry).where(cb.equal(rootEntry.get("email"), email));
 
             TypedQuery<UserEntity> allQuery = session.createQuery(all);
+
             return allQuery.getSingleResult();
         }
     }

@@ -27,6 +27,16 @@ public class ActionsHandler {
         return new UDPMessage(request.getAction(), null, Status.OK);
     }
 
+    @Handler(Action.CONNECTION_CLOSE)
+    public static UDPMessage connectionClose(UDPMessage request) {
+        UserEntity user = GsonContainer.getGson().fromJson(request.getBody(), UserEntity.class);
+        UserEntity dbUser = RepositoryFactory.getUserRepository().findById(user.getId());
+
+        NotifierHandler.getInstance().remove(dbUser);
+
+        return new UDPMessage(request.getAction(), null, Status.OK);
+    }
+
     @Handler(Action.REGISTRATION)
     public static UDPMessage registration(UDPMessage request) {
         try {

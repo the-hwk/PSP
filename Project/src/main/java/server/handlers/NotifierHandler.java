@@ -42,6 +42,7 @@ public class NotifierHandler {
     }
 
     public synchronized void remove(UserEntity user) {
+        sendData(Action.CLOSE_NOTIFIER, user, null);
         clients.remove(user);
     }
 

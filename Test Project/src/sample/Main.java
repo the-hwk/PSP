@@ -1,7 +1,12 @@
 package sample;
 
+import containers.GsonContainer;
 import controllers.Controller;
 import data.AppConfig;
+import data.Data;
+import data.UDPMessage;
+import enums.Action;
+import handlers.ConnectionHandler;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.Priority;
@@ -47,5 +52,14 @@ public class Main extends Application {
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    @Override
+    public void stop() throws Exception {
+        UDPMessage request = new UDPMessage(Action.CONNECTION_CLOSE,
+                GsonContainer.getGson().toJson(Data.getUser()));
+        ConnectionHandler.createRequest(request);
+
+        Data.getNotifierThread().join();
     }
 }

@@ -12,12 +12,12 @@ import java.lang.reflect.Method;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
-public class ServerHandler implements Runnable {
+public class ClientDataHandler implements Runnable {
     private final DatagramSocket socket;
     private final DatagramPacket packet;
-    private final static Logger logger = Logger.getLogger(ServerHandler.class);
+    private final static Logger logger = Logger.getLogger(ClientDataHandler.class);
 
-    public ServerHandler(DatagramSocket socket, DatagramPacket packet) {
+    public ClientDataHandler(DatagramSocket socket, DatagramPacket packet) {
         this.socket = socket;
         this.packet = packet;
     }

@@ -46,8 +46,10 @@ public class NotifyHandler implements Runnable {
 
                     if (message.getAction().equals(Action.NOTIFY_MESSAGE)) {
                         controller.notify(GsonContainer.getGson().fromJson(message.getBody(), MessageEntity.class));
-                    } else {
+                    } else if (message.getAction().equals(Action.NOTIFY_ROOM)) {
                         controller.notify(GsonContainer.getGson().fromJson(message.getBody(), RoomEntity.class));
+                    } else if (message.getAction().equals(Action.CLOSE_NOTIFIER)) {
+                        break;
                     }
                 }
             } catch (IOException e) {
